@@ -1,0 +1,247 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleType {
+  STUDENT
+  PROFESSOR
+  ADMIN
+}
+
+enum SubmissionType {
+  QUIZ
+  CODING
+  CHALLENGE
+}
+
+enum ChallengeStatus {
+  PENDING
+  ACCEPTED
+  COMPLETED
+  FAILED
+}
+
+enum MissionStatus {
+  ACTIVE
+  UPCOMING
+  COMPLETED
+}
+
+enum Language {
+  C
+  CPP
+  PYTHON
+}
+
+model Role {
+  id    Int      @id @default(autoincrement())
+  name  RoleType @unique
+  users User[]
+}
+
+model User {
+  id                   Int                  @id @default(autoincrement())
+  email                String               @unique
+  password             String
+  passwordResetToken   String?              @unique
+  passwordResetExpires DateTime?
+  firstName            String
+  lastName             String
+  avatarUrl            String?
+  title                String?
+  xp                   Int                  @default(0)
+  level                Int                  @default(1)
+  streak               Int                  @default(0)
+  lastLoginAt          DateTime?
+  roleId               Int
+  role                 Role                 @relation(fields: [roleId], references: [id])
+  lessonsCreated       Lesson[]             @relation("LessonAuthor")
+  quizSubmissions      Submission[]         @relation("UserSubmissions")
+  xpEvents             XPEvent[]
+  badges               BadgeAssignment[]
+  friendships          Friendship[]         @relation("FriendUser")
+  friendOf             Friendship[]         @relation("FriendTarget")
+  challengesSent       Challenge[]          @relation("ChallengerRelation")
+  challengesRecv       Challenge[]          @relation("OpponentRelation")
+  missionEntries       MissionParticipant[]
+  reports              ProfessorReport[]
+  missionsCreated      WeeklyMission[]
+  leaderboardEntry     LeaderboardEntry?
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+}
+
+model Lesson {
+  id          Int              @id @default(autoincrement())
+  title       String
+  description String
+  content     String
+  difficulty  String
+  tags        Json
+  authorId    Int
+  author      User             @relation("LessonAuthor", fields: [authorId], references: [id])
+  quizzes     Quiz[]
+  codingTasks CodingExercise[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model Quiz {
+  id          Int            @id @default(autoincrement())
+  lessonId    Int
+  title       String
+  description String
+  timeLimit   Int
+  questions   QuizQuestion[]
+  lesson      Lesson         @relation(fields: [lessonId], references: [id])
+  submissions Submission[]
+}
+
+model QuizQuestion {
+  id          Int    @id @default(autoincrement())
+  quizId      Int
+  prompt      String
+  type        String
+  options     Json
+  answerKey   String
+  explanation String
+  quiz        Quiz   @relation(fields: [quizId], references: [id])
+}
+
+model CodingExercise {
+  id          Int          @id @default(autoincrement())
+  lessonId    Int
+  title       String
+  prompt      String
+  starterCode String
+  difficulty  String
+  language    Language
+  inputSpec   String?
+  outputSpec  String?
+  lesson      Lesson       @relation(fields: [lessonId], references: [id])
+  submissions Submission[]
+  challenges  Challenge[]
+}
+
+model Submission {
+  id            Int             @id @default(autoincrement())
+  userId        Int
+  quizId        Int?
+  codingId      Int?
+  type          SubmissionType
+  sourceCode    String?
+  answers       Json?
+  score         Float
+  maxScore      Float
+  feedback      String
+  explanation   String?
+  runtimeStdout String?
+  runtimeStderr String?
+  createdAt     DateTime        @default(now())
+  user          User            @relation("UserSubmissions", fields: [userId], references: [id])
+  coding        CodingExercise? @relation(fields: [codingId], references: [id])
+  quiz          Quiz?           @relation(fields: [quizId], references: [id])
+}
+
+model XPEvent {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  delta     Int
+  reason    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Badge {
+  id          Int               @id @default(autoincrement())
+  code        String            @unique
+  name        String
+  description String
+  threshold   Int
+  assignments BadgeAssignment[]
+}
+
+model BadgeAssignment {
+  id        Int      @id @default(autoincrement())
+  badgeId   Int
+  userId    Int
+  awardedAt DateTime @default(now())
+  badge     Badge    @relation(fields: [badgeId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model LeaderboardEntry {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  xp        Int
+  rank      Int
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Friendship {
+  id            Int      @id @default(autoincrement())
+  requester     Int
+  addressee     Int
+  status        String   @default("accepted")
+  createdAt     DateTime @default(now())
+  requesterUser User     @relation("FriendUser", fields: [requester], references: [id])
+  addresseeUser User     @relation("FriendTarget", fields: [addressee], references: [id])
+
+  @@unique([requester, addressee], name: "requester_addressee")
+}
+
+model Challenge {
+  id               Int             @id @default(autoincrement())
+  challengerId     Int
+  opponentId       Int
+  codingExerciseId Int
+  status           ChallengeStatus @default(PENDING)
+  challengerScore  Float           @default(0)
+  opponentScore    Float           @default(0)
+  bonusXP          Int             @default(0)
+  createdAt        DateTime        @default(now())
+  challenger       User            @relation("ChallengerRelation", fields: [challengerId], references: [id])
+  opponent         User            @relation("OpponentRelation", fields: [opponentId], references: [id])
+  codingExercise   CodingExercise  @relation(fields: [codingExerciseId], references: [id])
+}
+
+model WeeklyMission {
+  id           Int                  @id @default(autoincrement())
+  title        String
+  description  String
+  goalType     String
+  goalValue    Int
+  rewardXP     Int
+  status       MissionStatus        @default(ACTIVE)
+  startDate    DateTime
+  endDate      DateTime
+  creatorId    Int
+  creator      User                 @relation(fields: [creatorId], references: [id])
+  participants MissionParticipant[]
+}
+
+model MissionParticipant {
+  id        Int           @id @default(autoincrement())
+  missionId Int
+  userId    Int
+  progress  Int           @default(0)
+  completed Boolean       @default(false)
+  mission   WeeklyMission @relation(fields: [missionId], references: [id])
+  user      User          @relation(fields: [userId], references: [id])
+
+  @@unique([missionId, userId], name: "missionId_userId")
+}
+
+model ProfessorReport {
+  id          Int      @id @default(autoincrement())
+  professorId Int
+  payload     Json
+  createdAt   DateTime @default(now())
+  professor   User     @relation(fields: [professorId], references: [id])
+}

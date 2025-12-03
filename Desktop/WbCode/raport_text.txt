@@ -1,0 +1,478 @@
+UNIVERSITATEA DIN BUCUREȘTI
+FACULTATEA DE MATEMATICĂ ȘI INFORMATICĂ
+DISCIPLINA INGINERIA PROGRAMĂRII (anul IV CTI)
+PLATFORMĂ DE ÎNVĂȚARE A INFORMATICII
+( 
+WBCode
+ )
+RAPORT DE ANALIZĂ
+Echipa 18
+Godeanu V. Victor Eduard
+ 
+Boca L.G Bogdan-Nicolae
+ 
+Șalgău Vlad-Ionuț
+ 
+2025
+Cuprins
+1.
+Scopul aplicației
+3
+2.
+Aria de acoperire a aplicației
+3
+3.
+Grupurile de interese
+3
+4.
+Colectarea cerințelor
+3
+4.1.
+Metode directe
+3
+4.1.1.
+Cerințele echipei de proiect
+3
+4.2.
+Metode indirecte
+3
+5.
+Interpretarea cerințelor
+3
+6.
+Prioritizarea cerințelor
+3
+Scopul aplicației
+Descrierea tipului, misiunii și beneficiarilor principali ai aplicației (max. ½ de pagină)
+Aplicația își propune să faciliteze procesul de învățare a informaticii printr-o abordare modernă, interactivă și plăcută, bazată pe principiile gamificării. Platforma transformă activitatea de studiu într-o experiență captivantă, motivând utilizatorii să exerseze constant și să își îmbunătățească performanțele, contribuind astfel la eficientizarea procesului de învățare chiar și pentru persoanele care întâmpină dificultăți în înțelegerea domeniului.
+Scopul principal este crearea unui mediu educațional digital care să combine componentele tradiționale de predare și informațiile clasice cu mecanisme ludice ce stimulează dorința de aprofundare a cunoștințelor — puncte de experiență, insigne și clasamente — elemente care, conform literaturii de specialitate, s-au dovedit eficiente în creșterea motivației intrinseci.
+Beneficiarii direcți ai aplicației sunt elevii și studenții, în special persoanele care întâmpină dificultăți prin metoda clasică de învățare, din cauza deficitului de atenție generat de mediul tehnologic actual, și care doresc să își dezvolte competențele în informatică. Totodată, profesorii pot utiliza platforma pentru a gestiona activitățile educaționale, a urmări evoluția cursanților și a oferi feedback personalizat. Pe termen lung, platforma poate fi integrată atât în contexte educaționale formale, cât și în programe de autoînvățare online.
+Aria de acoperire a aplicației
+Ce este și ce nu este aplicația – roluri în aplicație și obiective principale prin intermediul cărora aplicația își propune realizarea scopului (max. ½ de pagină)
+Platforma este destinată sprijinirii procesului educațional din domeniul informaticii și include trei roluri principale:
+• 
+Elevul/Studentul
+ (utilizatorul care dorește să aprofundeze domeniul): accesează conținutul educațional, rezolvă exerciții și teste adaptate nivelului propriu de cunoștințe, acumulează XP și progresează prin niveluri de dificultate care pot fi monitorizate prin clasamente obiective.
+• 
+Profesorul
+: creează seturi de exerciții, monitorizează rezultatele și oferă feedback personalizat, contribuind la o învățare ghidată și adaptivă.
+• 
+Administratorul
+: gestionează utilizatorii, conținutul platformei și buna funcționare a sistemului.
+Obiectivele principale
+ ale aplicației sunt:
+• Crearea unui cadru educ
+ațional interactiv bazat pe feedback imediat și recompense simbolice, cu posibilitatea ca, în viitor, aceste recompense să se transforme în oportunități de angajare pentru utilizatorii de top sau în certificări recunoscute de angajatori.
+• Promovarea unei învățări progresive prin niveluri de dificultate și provocări periodice.
+• Consolidarea relației dintre profesor și elev prin transparență și personalizare, într-un mediu comun și digital, adaptat erei actuale.
+Platforma nu își propune să înlocuiască complet procesul educațional tradițional sau să funcționeze ca un sistem complet de management academic (precum Moodle), ci să ofere un instrument complementar, centrat pe motivație, interactivitate și digitalizare, care să ușureze procesul de învățare
+.
+Grupurile de interese (Stakeholders)
+Care sunt persoanele sau grupurile de persoane interesate de aplicație
+• Utilizatorii (elevi/studenți)
+: principalii beneficiari ai aplicației, care folosesc platforma pentru a învăța informatică într-un mod interactiv și gamificat, rezolvând exerciții și acumulând puncte de experiență (XP).
+• Profesorii și mentorii
+: actori implicați în crearea de exerciții, gestionarea conținutului educațional, urmărirea progresului cursanților și oferirea de feedback personalizat.
+• 
+Administratorul aplicației
+: responsabil de gestionarea conturilor, securitatea datelor și buna funcționare a sistemului.
+• 
+Echipa de dezvoltare
+: formată din membrii echipei de proiect, care implementează și testează aplicația, având totodată rolul de a-și consolida competențele tehnice.
+• 
+Echipa de suport
+: asigură mentenanța, actualizările și stabilitatea aplicației.
+• 
+Instituțiile educaționale
+: potențiali parteneri interesați de utilizarea platformei în procesul didactic, în scopul modernizării metodelor de predare.
+• 
+Stakeholderi secundari (părinți, colaboratori, sponsori, organizații din domeniul educației digitale)
+: pot contribui la promovarea, extinderea și îmbunătățirea aplicației.
+Colectarea cerințelor
+Se vor enumera cerințele împărțite pe sursele din care au fost colectate, precum și pe metodele de colectare. 
+Cerințele au fost identificate pe baza interacțiunii directe cu principalele grupuri de interese, prin interviuri, discuții de echipă, analiza cerințelor cadrului didactic (Product Owner) și prin observarea contextului educațional actual.
+Metodele utilizate pentru colectarea cerințelor au inclus:
+Interviuri și discuții
+ cu profesorul coordonator (Product Owner-ul);
+Chestionare și conversații informale
+ cu potențiali utilizatori (elevi, studenți);
+Ședințe interne de echipă
+ pentru identificarea cerințelor tehnice și funcționale;
+Analiza comparativă
+ a platformelor educaționale existente (ex: Khan Academy, Codecademy, Brilliant) pentru identificarea bunelor practici.
+Metode directe
+Referințe către cerințele colectate în mod direct de la grupurile de interese (interviuri, chestionare etc)
+Cerințele generale
+Se vor prezenta constrângerile care rezultă din contextul real în care se desfășoară proiectul și din enunțul Temei generale de proiect
+Aplicația trebuie să ofere 
+un mediu educațional online accesibil
+ oricărui utilizator interesat de învățarea informaticii.
+Sistemul trebuie să fie 
+ușor de utilizat
+, cu o interfață intuitivă și modernă.
+Platforma va permite învățarea progresivă, bazată pe 
+niveluri de dificultate
+ și 
+recompense simbolice (XP, insigne, titluri)
+.
+Aplicația trebuie să poată fi utilizată atât pe desktop, cât și pe dispozitive mobile (prin interfață web responsivă).
+Datele utilizatorilor (conturi, rezultate, scoruri) trebuie gestionate în condiții de 
+securitate și confidențialitate
+.
+Platforma nu trebuie să substituie complet activitatea educațională tradițională, ci să o 
+completeze printr-o abordare interactivă
+ și gamificată.
+Cerințele Product Owner-ului
+Un jucarator poate provoca un alt jucator.
+Se vor prezenta cerințele Product Owner-ului (profesorul de curs), primite la întâlnirea cu acesta
+În urma întâlnirii cu Product Owner-ul (profesorul coordonator al proiectului), au fost stabilite următoarele cerințe principale privind dezvoltarea aplicației:
+Integrarea unui editor de cod interactiv
+Platforma trebuie să includă un 
+editor de cod integrat (embedded)
+, care să permită utilizatorilor să scrie, să ruleze și să testeze cod direct din interfața aplicației, fără a utiliza instrumente externe.
+Editorul va trebui să ofere o 
+experiență fluidă și intuitivă
+, cu funcționalități de bază precum: evidențierea sintaxei, indentare automată, afișarea erorilor de compilare/interpetare și salvarea locală sau în cloud a codului.
+Vor fi suportate cel puțin 
+trei limbaje de programare
+: 
+C
+, 
+C++
+ și 
+Python
+, acestea fiind cele mai utilizate în mediul educațional pentru învățarea conceptelor fundamentale de programare.
+Implementarea unui sistem de gamificare centrat pe progresul utilizatorului
+Gamificarea va fi orientată în primul rând spre 
+urmărirea progresului personal
+ (prin acumularea de puncte de experiență, niveluri și insigne) și, într-o măsură secundară, spre 
+competiția între utilizatori
+.
+Sistemul va reflecta evoluția cursantului prin niveluri de dificultate și statistici vizuale privind performanța, fără a pune accent exclusiv pe ierarhii.
+Funcționalitate de provocări între utilizatori
+Platforma va include o componentă socială sub forma 
+provocărilor între prieteni
+.
+Un utilizator care a rezolvat o problemă va putea 
+provoca un alt utilizator din lista sa de prieteni
+, care nu a finalizat încă respectiva problemă, pentru a o rezolva 
+mai bine sau mai rapid
+.
+În cazul în care provocarea este acceptată și adversarul reușește performanța cerută, 
+inițiatorul provocării primește un bonus de puncte
+ suplimentar, care se adaugă la scorul obținut inițial pentru rezolvarea problemei.
+Această mecanică urmărește să 
+stimuleze competiția prietenoasă
+ și să crească implicarea utilizatorilor în activitățile platformei.
+Cerințele membrilor echipei de proiect, ca utilizatori
+Se vor prezenta și argumenta cerințele pe care membrii echipei de proiect le formulează în calitate de potențiali utilizatori ai aplicației
+Membrii echipei, în calitate de potențiali utilizatori (elevi/studenți), au formulat următoarele cerințe:
+Posibilitatea de a rezolva 
+exerciții practice, teste grilă și provocări săptămânale
+.
+Sistem de 
+clasamente și recompense
+ pentru stimularea competiției prietenoase.
+Acces la 
+statistici personale
+ (progres, nivel, scor total, timp de studiu).
+Crearea unui 
+profil personalizat
+ (avatar, nivel, titluri).
+Acces rapid la feedback detaliat, inclusiv la 
+explicațiile răspunsurilor greșite
+.
+Posibilitatea de a concura sau colabora cu alți utilizatori în cadrul unor 
+evenimente tematice
+.
+Cerințele altor stakeholder-i
+Se vor prezenta cerințele colectate de la alte persoane interesate față de aplicație (dacă reușiți să găsiți și să contactați astfel de stakeholder-i din afara echipei)
+Pe baza discuțiilor și observațiilor privind potențialii parteneri externi (profesori, părinți, instituții educaționale), au fost identificate următoarele cerințe:
+O secțiune de 
+rapoarte de progres
+ ușor de exportat pentru profesori și părinți.
+Posibilitatea de 
+integrare cu platforme educaționale existente
+ (ex: Google Classroom, Moodle).
+Mecanisme de 
+autentificare sigură
+ și protecție a datelor personale (GDPR compliant).
+Disponibilitatea unei 
+versiuni demo publice
+ pentru testarea funcționalităților de bază.
+Cerințele membrilor echipei de proiect, ca dezvoltatori
+Se vor prezenta și argumenta tehnologiile în care echipa de proiect ar dori să dezvolte aplicația (dacă există astfel de cerințe)
+Ca dezvoltatori, membrii echipei au propus următoarele cerințe și preferințe tehnice:
+Utilizarea unui 
+stack web modern
+ pentru a asigura performanță și scalabilitate:
+Front-end: 
+React.js
+, HTML5, CSS3, TailwindCSS
+Back-end: 
+Node.js
+ sau 
+Java / .NET
+Bază de date: 
+MySQL
+ sau 
+Oracle SQL
+Implementarea unui 
+API RESTful
+ pentru comunicarea între client și server.
+Utilizarea 
+autentificării bazate pe token-uri (JWT)
+ pentru securitate.
+Dezvoltarea modulară, cu posibilitatea de 
+extindere ulterioară
+ (ex: adăugarea de noi tipuri de exerciții).
+Folosirea unui sistem de 
+control al versiunilor (Git/GitHub)
+ pentru colaborare eficientă.
+Testare automată și manuală pentru verificarea stabilității aplicației.
+Metode indirecte
+Referințe către cerințele colectate prin metode indirecte (exemple de aplicații, documentare etc)
+Cerințele indirecte au fost identificate prin 
+analiza literaturii de specialitate
+, 
+documentare online
+ și 
+compararea cu alte aplicații educaționale
+ care utilizează principiile gamificării. Scopul acestui demers a fost de a identifica cele mai eficiente practici de învățare digitală, de a înțelege tendințele actuale în educația asistată de tehnologie și de a adapta aceste concluzii la nevoile specifice domeniului informaticii.
+Cerințele colectate prin documentare
+Se va face referință, în special, la nevoiele actuale în domeniul de interes pentru aplicație și la soluții teoretice offline sau online pentru problema abordată
+Documentarea a vizat studiul conceptelor moderne de 
+învățare interactivă și gamificare educațională
+, pentru a stabili principiile care pot îmbunătăți implicarea și motivația utilizatorilor.
+Sursele teoretice și practice consultate au evidențiat următoarele nevoi și soluții relevante pentru domeniul proiectului:
+Nevoia unei 
+abordări personalizate a învățării
+, care să adapteze exercițiile la nivelul fiecărui utilizator, pentru a evita frustrarea și a menține interesul.
+Importanța 
+feedbackului imediat
+ și a recompenselor simbolice (XP, insigne, titluri) pentru consolidarea motivației intrinseci.
+Utilizarea 
+metodelor vizuale și interactive
+ (grafice, clasamente, bare de progres) pentru urmărirea performanțelor.
+Încurajarea 
+învățării prin competiție și colaborare
+, prin clasamente, provocări și evenimente comune.
+Integrarea unor mecanisme de 
+repetiție inteligentă (adaptive learning)
+ care să permită reluarea exercițiilor greșite până la stăpânirea completă a temei.
+Necesitatea de a menține 
+simplitatea interfeței
+, pentru a evita supraîncărcarea cognitivă și a facilita utilizarea de către persoane cu competențe digitale variate.
+În urma acestei documentări, au rezultat cerințe indirecte precum:
+Implementarea unui 
+motor de recomandare a exercițiilor
+ bazat pe nivelul curent de cunoștințe.
+Crearea unui 
+sistem vizual de progres
+ (bare de XP, insigne, nivele).
+Utilizarea unei 
+interfețe clare și colorate
+, care să favorizeze învățarea activă.
+Posibilitatea extinderii ulterioare a platformei cu 
+module de învățare adaptivă
+ sau 
+inteligență artificială
+ (analiză automată a progresului).
+Cerințele colectate din analiza aplicațiilor existente
+Se vor prezenta punctele tari și slabe ale soluțiilor informatice similare (fie din punct de vedere al rezolvărilor aceleiași probleme sau a unei probleme similare, fie din punctul de vedere al utilizării unor soluții similare cu cele avute în vedere de voi – în special tehnici de gamification, dar nu numai) în raport cu nevoile actuale din domeniu și soluțiile la care v-ați gândit
+Pentru fundamentarea cerințelor sistemului, a fost realizată o 
+analiză comparativă
+ a mai multor platforme educaționale și aplicații interactive populare în domeniul IT și STEM.
+Principalele exemple analizate și concluziile extrase sunt prezentate mai jos:
+Aplicație / Platformă
+Puncte tari
+Puncte slabe
+Elemente inspirate pentru proiect
+Khan Academy
+Oferă lecții video structurate, exerciții progresive, feedback imediat
+Lipsă de personalizare avansată a experienței; design relativ static
+Integrarea exercițiilor auto-corective și a rapoartelor de progres
+Codecademy
+Interfață interactivă, învățare prin codare directă, feedback instant
+Limitări în varianta gratuită; accent mare pe limbaje, nu pe concepte teoretice
+Implementarea unui mediu de codare simplificat pentru exerciții practice
+Brilliant.org
+Design atractiv, învățare prin explorare și joc logic, motivație vizuală ridicată
+Lipsa limbii române; cost ridicat pentru utilizatori
+Adoptarea stilului de exerciții „puzzle-based” și a feedbackului narativ
+Duolingo (pentru limbaje)
+Exemplu excelent de gamificare (XP, insigne, streaks, niveluri)
+Conținut uneori repetitiv, lipsă de profunzime la nivel avansat
+Adaptarea sistemului de streaks și recompense zilnice pentru informatică
+W3Schools / SoloLearn
+Platforme accesibile pentru autoînvățare rapidă
+Interfață simplă, dar puțin ludică
+Combinarea conținutului teoretic cu mecanisme de progres vizibil
+Concluzii din analiza comparativă:
+Aplicațiile existente reușesc să ofere învățare eficientă, dar 
+puține combină în mod echilibrat elementele educaționale cu cele ludice
+.
+Există o nevoie clară pentru o platformă care să îmbine 
+conținutul educațional structurat
+ cu 
+mecanismele de gamificare avansată
+ (XP, insigne, titluri, provocări).
+Platforma propusă va valorifica punctele forte ale aplicațiilor analizate, dar va adăuga 
+un nivel mai ridicat de personalizare și interactivitate
+.
+Astfel, cerințele indirecte colectate includ:
+Necesitatea de a integra un 
+sistem de recompense diversificat
+ (XP, insigne, titluri, streaks).
+Implementarea unui 
+mod de învățare adaptiv
+, bazat pe performanțele anterioare.
+Crearea unui 
+clasament interactiv
+, vizibil în timp real.
+Oferirea de 
+provocări și misiuni săptămânale
+, care să mențină motivația și participarea constantă.
+Igienizarea cerințelor
+Se vor discuta, „igieniza”, rafina și structura cerințe, adică împărți pe categorii, în funcționale – în funcție de rol și non-funcționale (cerințe de calitate, respectiv constrângeri) – în funcție de tip.
+Procesul de igienizare a constat în rafinarea și structurarea cerințelor colectate din sursele directe și indirecte (prezentate în Secțiunea 4). Acestea au fost clasificate în două categorii principale, pentru a facilita prioritizarea și dezvoltarea ulterioară:
+A. Cerințe Funcționale
+ 
+Pentru Elev/Student:
+ 
+Să se poată loga și să aibă un profil personalizat.
+Să poată accesa lecții și să rezolve diverse exerciții.
+Să primească feedback instant la rezolvări, inclusiv explicații la greșeli.
+Să vadă elementele de gamificare: puncte (XP), insigne, niveluri și un clasament.
+Pentru Profesor:
+ 
+Să poată crea și gestiona conținutul (lecții, exerciții).
+Să poată urmări activitatea și progresul studenților.
+Pentru Administrator:
+ 
+Să poată gestiona conturile de utilizator și rolurile acestora.
+B. 
+Cerințe Non-Funcționale
+Cerințe de calitate
+:
+Performanță:
+ aplicația trebuie să ruleze fluent, fără timpi mari de răspuns, chiar și în condiții de trafic ridicat.
+Utilizabilitate:
+ interfață intuitivă, prietenoasă, cu design modern și compatibilitate multiplatformă (desktop, tabletă, mobil).
+Fiabilitate:
+ funcționalitățile principale (autentificare, salvare rezultate, evaluare) trebuie să fie disponibile permanent.
+Securitate:
+ protejarea datelor utilizatorilor, autentificare sigură (JWT) și conformitate GDPR.
+Constrângeri
+Tehnologice:
+ utilizarea unui stack modern – React pentru front-end, Node.js / Java / .NET pentru back-end, MySQL / Oracle pentru baza de date.
+Organizatorice:
+ respectarea termenelor de implementare și a formatului proiectului impus de profesor.
+Educaționale:
+ menținerea accentului pe progresul individual al elevului și integrarea elementelor de gamificare.
+Prioritizarea cerințelor
+Se va folosi Analiza Pareto aplicată pe impact și efort pentru prioritizarea cerințelor => Lista prioritizată a cerințelor => Lista cerințelor care urmează să fie implementate în cadrul proiectului
+Evident, nu putem implementa totul în timpul alocat. A trebuit să prioritizăm funcționalitățile. Am folosit o analiză bazată pe 
+Impact
+ (cât de importantă e funcția pentru scopul aplicației) și 
+Efort
+ (cât de complexă este implementarea).
+Ce vom implementa (MVP - Produsul Minim Viabil + extra):
+(P0 - Esențial)
+ Sistemul de conturi și logare pentru toate rolurile.
+(P0 - Esențial)
+ Motorul de bază: crearea exercițiilor (pentru profesor) și rezolvarea lor (pentru elev).
+(P0 - Esențial)
+ Sistemul de feedback imediat la răspunsuri.
+(P0 - Esențial)
+ Gamificarea de bază: acumularea de XP și afișarea unui clasament.
+(P0 - Esențial)
+ Un panou de bază pentru profesor, unde să vadă progresul elevilor.
+(P1 - Important)
+ Personalizarea profilului de elev (avatar, titluri).
+(P1 - Important)
+ Implementarea unor provocări săptămâ
+nale pentru a menține interesul
+Specificațiile de analiză
+Se vor scrie cerințele rămase pentru implementare după eliminarea celor mai puțin prioritare (rezultate la punctul 6.) sub formă de User Stories, pe categorii (rezultate la punctul 5.)
+Elev/Student
+Autentificare:
+„Ca 
+elev
+, vreau să îmi pot 
+crea un cont
+ și să mă 
+autentific
+ în platformă, pentru a avea acces la profilul meu și la conținutul educațional.”
+Învățare și Feedback:
+„Ca 
+elev
+, vreau să 
+rezolv exerciții
+ (practice, teste grilă) și să 
+primesc feedback imediat
+, pentru a 
+înțelege unde am greșit
+ și a învăța mai repede.”
+Gamificare și Motivație:
+„Ca 
+elev
+, vreau să 
+acumulez puncte de experiență (XP)
+ pentru răspunsuri corecte și să 
+văd un clasament
+, pentru a 
+mă simți motivat
+ și a concura cu prietenii.”
+Personalizare (P1):
+„Ca 
+elev
+, vreau să îmi pot 
+personaliza profilul
+ cu un avatar și să deblochez titluri, pentru a 
+mă simți mai implicat
+ și a-mi exprima identitatea.”
+Implicare continuă (P1):
+„Ca 
+elev
+, vreau să 
+particip la provocări săptămânale
+, pentru a 
+rămâne motivat
+, a exersa constant și a câștiga recompense suplimentare.”
+Profesor
+Managementul Conținutului:
+„Ca 
+profesor
+, vreau să pot 
+crea ușor teste grilă și exerciții practice
+, pentru a 
+evalua cunoștințele
+ studenților.”
+Monitorizarea Progresului:
+„Ca 
+profesor
+, vreau să 
+văd progresul
+ general al grupelor mele (un panou de bază), pentru a 
+identifica cine are nevoie de ajutor
+ suplimentar.”
+Managementul Implicării (P1):
+„Ca 
+profesor
+, vreau să pot 
+defini provocări săptămânale
+ sau evenimente, pentru a 
+stimula activitatea
+ în platformă.”
+Administrator
+Managementul Utilizatorilor:
+„Ca 
+administrator
+, vreau să pot 
+gestiona conturile
+ și să 
+modific rolul unui utilizator
+ (de ex., din elev în profesor), pentru a 
+administra corect permisiunile
+ în platformă
