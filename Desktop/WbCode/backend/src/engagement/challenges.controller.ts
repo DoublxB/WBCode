@@ -3,14 +3,23 @@ import { ChallengesService } from './challenges.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { SubmitCodeDto } from '../learning/dto/create-coding-exercise.dto';
-import { IsInt } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsIn } from 'class-validator';
 
 class CreateChallengeDto {
   @IsInt()
   opponentId!: number;
 
+  @IsOptional()
   @IsInt()
-  codingExerciseId!: number;
+  codingExerciseId?: number; // Optional - if not provided, will use category
+
+  @IsOptional()
+  @IsString()
+  category?: string; // Category for random selection
+
+  @IsOptional()
+  @IsIn(['RANDOM', 'SPECIFIC'])
+  mode?: 'RANDOM' | 'SPECIFIC'; // Challenge mode
 }
 
 @UseGuards(JwtAuthGuard)

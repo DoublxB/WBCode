@@ -11,11 +11,23 @@ import ProfilePage from './pages/student/ProfilePage';
 import LeaderboardPage from './pages/student/LeaderboardPage';
 import MissionsPage from './pages/student/MissionsPage';
 import ChallengesPage from './pages/student/ChallengesPage';
+import ChallengeSolvePage from './pages/student/ChallengeSolvePage';
 import FriendsPage from './pages/student/FriendsPage';
 import ProfessorDashboardPage from './pages/professor/ProfessorDashboardPage';
 import ContentBuilderPage from './pages/professor/ContentBuilderPage';
 import ReportsPage from './pages/professor/ReportsPage';
 import AdminPanelPage from './pages/admin/AdminPanelPage';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminMessagingPage from './pages/admin/AdminMessagingPage';
+import AdminApprovalsPage from './pages/admin/AdminApprovalsPage';
+import AdminSupportPage from './pages/admin/AdminSupportPage';
+import AssignmentApprovalsPage from './pages/admin/AssignmentApprovalsPage';
+import ClassesPage from './pages/professor/ClassesPage';
+import StudentClassesPage from './pages/student/StudentClassesPage';
+import ClassDetailPage from './pages/student/ClassDetailPage';
+import AssignmentDetailPage from './pages/student/AssignmentDetailPage';
+import CreateAssignmentPage from './pages/professor/CreateAssignmentPage';
+import ChatPage from './pages/chat/ChatPage';
 import { authStore } from './store/auth.store';
 
 const loader = () => {
@@ -104,11 +116,24 @@ export const router = createBrowserRouter([
       { path: 'leaderboard', element: <LeaderboardPage /> },
       { path: 'missions', element: <MissionsPage /> },
       { path: 'challenges', element: <ChallengesPage /> },
+      { path: 'challenges/:id/solve', element: <ChallengeSolvePage /> },
       { path: 'friends', element: <FriendsPage /> },
+      { path: 'chat', element: <ChatPage /> },
       { path: 'professor', element: <ProfessorDashboardPage /> },
       { path: 'professor/content', element: <ContentBuilderPage /> },
       { path: 'professor/reports', element: <ReportsPage /> },
-      { path: 'admin', element: <AdminPanelPage /> }
+      { path: 'professor/classes', element: <ClassesPage /> },
+      { path: 'professor/classes/:id', element: <ClassDetailPage /> },
+      { path: 'professor/classes/:classId/create-assignment', element: <CreateAssignmentPage /> },
+      { path: 'classes', element: <StudentClassesPage /> },
+      { path: 'classes/:id', element: <ClassDetailPage /> },
+      { path: 'classes/:classId/assignments/:assignmentId', element: <AssignmentDetailPage /> },
+      { path: 'admin', element: <AdminDashboardPage /> },
+      { path: 'admin/users', element: <AdminPanelPage /> },
+      { path: 'admin/messages', element: <AdminMessagingPage /> },
+      { path: 'admin/approvals', element: <AdminApprovalsPage /> },
+      { path: 'admin/assignment-approvals', element: <AssignmentApprovalsPage /> },
+      { path: 'admin/support', element: <AdminSupportPage /> }
     ]
   },
   {

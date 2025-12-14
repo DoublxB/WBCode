@@ -11,6 +11,9 @@ export class UsersController {
 
   @Get('profile')
   getProfile(@CurrentUser('sub') userId: number) {
+    if (!userId || isNaN(userId)) {
+      throw new Error(`Invalid userId: ${userId}`);
+    }
     return this.users.getProfile(userId);
   }
 
@@ -18,7 +21,24 @@ export class UsersController {
   updateProfile(@CurrentUser('sub') userId: number, @Body() dto: UpdateProfileDto) {
     return this.users.updateProfile(userId, dto);
   }
+
+  @Get('dashboard-stats')
+  getDashboardStats(@CurrentUser('sub') userId: number) {
+    if (!userId || isNaN(userId)) {
+      throw new Error(`Invalid userId: ${userId}`);
+    }
+    return this.users.getDashboardStats(userId);
+  }
+
+  @Get('notifications')
+  getNotifications(@CurrentUser('sub') userId: number) {
+    if (!userId || isNaN(userId)) {
+      throw new Error(`Invalid userId: ${userId}`);
+    }
+    return this.users.getNotifications(userId);
+  }
 }
+
 
 
 

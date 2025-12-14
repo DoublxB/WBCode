@@ -20,7 +20,11 @@ export class AdminController {
   @Roles(Role.ADMIN)
   @Get('users')
   listUsers(@CurrentUser() user: any) {
-    return this.admin.listUsers(user);
+    const adminUser = {
+      id: user.sub || user.id,
+      role: user.role || user.role?.name
+    };
+    return this.admin.listUsers(adminUser);
   }
 
   @Roles(Role.ADMIN)
@@ -30,9 +34,24 @@ export class AdminController {
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: UpdateRoleDto
   ) {
-    return this.admin.updateUserRole(user, id, dto.role);
+    const adminUser = {
+      id: user.sub || user.id,
+      role: user.role || user.role?.name
+    };
+    return this.admin.updateUserRole(adminUser, id, dto.role);
+  }
+
+  @Roles(Role.ADMIN)
+  @Get('dashboard')
+  getDashboard(@CurrentUser() user: any) {
+    const adminUser = {
+      id: user.sub || user.id,
+      role: user.role || user.role?.name
+    };
+    return this.admin.getDashboardStats(adminUser);
   }
 }
+
 
 
 

@@ -1,26 +1,40 @@
 import { FormEvent, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
+import { useSubmitForApproval } from '../../api/hooks';
 
 const ContentBuilderPage = () => {
+  const queryClient = useQueryClient();
   const [lessonForm, setLessonForm] = useState({
     title: '',
     description: '',
     content: '',
     difficulty: 'Beginner'
   });
+  const submitForApproval = useSubmitForApproval();
   const createLesson = useMutation({
-    mutationFn: () =>
-      api.post('/lessons', {
+    mutationFn: async () => {
+      const { data } = await api.post('/lessons', {
         ...lessonForm,
         tags: ['curriculum']
-      }),
+      });
+      return data;
+    },
     onSuccess: () => setLessonForm({ title: '', description: '', content: '', difficulty: 'Beginner' })
   });
 
-  const submitLesson = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent, withApproval: boolean) => {
     event.preventDefault();
-    createLesson.mutate();
+    const created = await createLesson.mutateAsync();
+    if (withApproval && created?.id) {
+      await submitForApproval.mutateAsync({
+        contentType: 'LESSON',
+        contentId: created.id
+      });
+      // Refresh pending approvals lists for admin and submissions list for professor
+      queryClient.invalidateQueries({ queryKey: ['pending-approvals'] });
+      queryClient.invalidateQueries({ queryKey: ['my-submissions'] });
+    }
   };
 
   return (
@@ -29,7 +43,7 @@ const ContentBuilderPage = () => {
         <p className="text-sm text-slate-400">Create lessons & challenges</p>
         <h1 className="text-3xl font-semibold text-white">Professor Content Builder</h1>
       </header>
-      <form onSubmit={submitLesson} className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 space-y-4">
+      <form className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 space-y-4">
         <h2 className="text-xl font-semibold text-white">New Lesson</h2>
         <input
           type="text"
@@ -54,13 +68,22 @@ const ContentBuilderPage = () => {
           rows={6}
           required
         />
-        <button
-          type="submit"
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          disabled={createLesson.isLoading}
-        >
-          Publish lesson
-        </button>
+        <div className="flex gap-3">
+          <button
+            onClick={(e) => handleSubmit(e, false)}
+            className="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-50"
+            disabled={createLesson.isPending || submitForApproval.isPending}
+          >
+            Save draft
+          </button>
+          <button
+            onClick={(e) => handleSubmit(e, true)}
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
+            disabled={createLesson.isPending || submitForApproval.isPending}
+          >
+            Submit for approval
+          </button>
+        </div>
       </form>
     </div>
   );

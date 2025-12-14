@@ -1,13 +1,17 @@
 import { useState } from 'react';
-import { useFriends, useAddFriend, useLeaderboard, useProfile } from '../../api/hooks';
-import { UserPlus, Users, Search } from 'lucide-react';
+import { useFriends, useAddFriend, useLeaderboard, useProfile, useCreateDirectConversation } from '../../api/hooks';
+import { UserPlus, Users, Search, MessageSquare } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const FriendsPage = () => {
   const { data: friends = [], refetch } = useFriends();
   const { data: leaderboard = [] } = useLeaderboard();
   const addFriend = useAddFriend();
+  const createDirect = useCreateDirectConversation();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [addingFriendId, setAddingFriendId] = useState<number | null>(null);
+  const [messagingUserId, setMessagingUserId] = useState<number | null>(null);
 
   const handleAddFriend = async (friendId: number) => {
     setAddingFriendId(friendId);
@@ -19,6 +23,19 @@ const FriendsPage = () => {
       alert(error?.response?.data?.message || 'Failed to add friend');
     } finally {
       setAddingFriendId(null);
+    }
+  };
+
+  const handleMessage = async (userId: number) => {
+    setMessagingUserId(userId);
+    try {
+      const conversation = await createDirect.mutateAsync(userId);
+      navigate(`/chat?conversation=${conversation.id}`);
+    } catch (error: any) {
+      console.error('Failed to create conversation:', error);
+      alert(error?.response?.data?.message || 'Failed to start conversation');
+    } finally {
+      setMessagingUserId(null);
     }
   };
 
@@ -84,6 +101,14 @@ const FriendsPage = () => {
                       </p>
                     </div>
                   </div>
+                  <button
+                    onClick={() => handleMessage(friend.id)}
+                    disabled={messagingUserId === friend.id}
+                    className="mt-3 w-full rounded-lg border border-primary/50 bg-primary/10 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/20 disabled:opacity-50 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    {messagingUserId === friend.id ? 'Opening...' : 'Message'}
+                  </button>
                 </div>
               );
             })}

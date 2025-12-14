@@ -26,21 +26,34 @@ export class LessonsController {
   @Roles(Role.PROFESSOR, Role.ADMIN)
   @Post()
   create(@CurrentUser() user: any, @Body() dto: CreateLessonDto) {
-    return this.lessons.createLesson(user, dto);
+    const userObj = {
+      id: user.sub || user.id,
+      role: user.role || user.role?.name
+    };
+    return this.lessons.createLesson(userObj, dto);
   }
 
   @Roles(Role.PROFESSOR, Role.ADMIN)
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: any, @Body() dto: UpdateLessonDto) {
-    return this.lessons.updateLesson(id, user, dto);
+    const userObj = {
+      id: user.sub || user.id,
+      role: user.role || user.role?.name
+    };
+    return this.lessons.updateLesson(id, userObj, dto);
   }
 
   @Roles(Role.PROFESSOR, Role.ADMIN)
   @Delete(':id')
   remove(@Param('id', ParseIntPipe) id: number, @CurrentUser() user: any) {
-    return this.lessons.deleteLesson(id, user);
+    const userObj = {
+      id: user.sub || user.id,
+      role: user.role || user.role?.name
+    };
+    return this.lessons.deleteLesson(id, userObj);
   }
 }
+
 
 
 

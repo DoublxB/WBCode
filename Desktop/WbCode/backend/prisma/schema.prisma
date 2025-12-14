@@ -45,35 +45,50 @@ model Role {
 }
 
 model User {
-  id                   Int                  @id @default(autoincrement())
-  email                String               @unique
-  password             String
-  passwordResetToken   String?              @unique
-  passwordResetExpires DateTime?
-  firstName            String
-  lastName             String
-  avatarUrl            String?
-  title                String?
-  xp                   Int                  @default(0)
-  level                Int                  @default(1)
-  streak               Int                  @default(0)
-  lastLoginAt          DateTime?
-  roleId               Int
-  role                 Role                 @relation(fields: [roleId], references: [id])
-  lessonsCreated       Lesson[]             @relation("LessonAuthor")
-  quizSubmissions      Submission[]         @relation("UserSubmissions")
-  xpEvents             XPEvent[]
-  badges               BadgeAssignment[]
-  friendships          Friendship[]         @relation("FriendUser")
-  friendOf             Friendship[]         @relation("FriendTarget")
-  challengesSent       Challenge[]          @relation("ChallengerRelation")
-  challengesRecv       Challenge[]          @relation("OpponentRelation")
-  missionEntries       MissionParticipant[]
-  reports              ProfessorReport[]
-  missionsCreated      WeeklyMission[]
-  leaderboardEntry     LeaderboardEntry?
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
+  id                       Int                         @id @default(autoincrement())
+  email                    String                      @unique
+  password                 String
+  passwordResetToken       String?                     @unique
+  passwordResetExpires     DateTime?
+  firstName                String
+  lastName                 String
+  avatarUrl                String?
+  title                    String?
+  xp                       Int                         @default(0)
+  level                    Int                         @default(1)
+  streak                   Int                         @default(0)
+  lastLoginAt              DateTime?
+  roleId                   Int
+  role                     Role                        @relation(fields: [roleId], references: [id])
+  lessonsCreated           Lesson[]                    @relation("LessonAuthor")
+  quizSubmissions          Submission[]                @relation("UserSubmissions")
+  xpEvents                 XPEvent[]
+  badges                   BadgeAssignment[]
+  friendships              Friendship[]                @relation("FriendUser")
+  friendOf                 Friendship[]                @relation("FriendTarget")
+  challengesSent           Challenge[]                 @relation("ChallengerRelation")
+  challengesRecv           Challenge[]                 @relation("OpponentRelation")
+  missionEntries           MissionParticipant[]
+  reports                  ProfessorReport[]
+  missionsCreated          WeeklyMission[]
+  leaderboardEntry         LeaderboardEntry?
+  contentApprovalsSent     ContentApproval[]           @relation("ContentApprovalProfessor")
+  contentApprovalsReviewed ContentApproval[]           @relation("ContentApprovalAdmin")
+  messagesSent             Message[]                   @relation("MessageSender")
+  messagesReceived         Message[]                   @relation("MessageReceiver")
+  chatParticipations       ConversationParticipant[]   @relation("ChatParticipant")
+  chatMessagesSent         ChatMessage[]               @relation("ChatMessageSender")
+  supportTickets           SupportTicket[]             @relation("SupportTicketUser")
+  supportTicketsAssigned   SupportTicket[]             @relation("SupportTicketAdmin")
+  supportTicketReplies     SupportTicketReply[]        @relation("SupportTicketReplyUser")
+  classesCreated           Class[]                     @relation("ClassProfessor")
+  classMemberships         ClassMember[]               @relation("ClassStudent")
+  announcementsCreated     ClassAnnouncement[]         @relation("AnnouncementProfessor")
+  assignmentsCreated       ClassAssignment[]           @relation("AssignmentProfessor")
+  assignmentsReviewed      ClassAssignment[]           @relation("AssignmentAdmin")
+  assignmentSubmissions    ClassAssignmentSubmission[] @relation("AssignmentSubmissionStudent")
+  createdAt                DateTime                    @default(now())
+  updatedAt                DateTime                    @updatedAt
 }
 
 model Lesson {
@@ -84,6 +99,7 @@ model Lesson {
   difficulty  String
   tags        Json
   authorId    Int
+  status      String           @default("DRAFT")
   author      User             @relation("LessonAuthor", fields: [authorId], references: [id])
   quizzes     Quiz[]
   codingTasks CodingExercise[]
@@ -97,6 +113,7 @@ model Quiz {
   title       String
   description String
   timeLimit   Int
+  status      String         @default("DRAFT")
   questions   QuizQuestion[]
   lesson      Lesson         @relation(fields: [lessonId], references: [id])
   submissions Submission[]
@@ -121,8 +138,10 @@ model CodingExercise {
   starterCode String
   difficulty  String
   language    Language
+  category    String?      // Category for challenges (Algorithms, Data Structures, Frontend, Database, Debugging)
   inputSpec   String?
   outputSpec  String?
+  status      String       @default("DRAFT")
   lesson      Lesson       @relation(fields: [lessonId], references: [id])
   submissions Submission[]
   challenges  Challenge[]
@@ -244,4 +263,222 @@ model ProfessorReport {
   payload     Json
   createdAt   DateTime @default(now())
   professor   User     @relation(fields: [professorId], references: [id])
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVISIONS_REQUESTED
+}
+
+enum ContentType {
+  LESSON
+  QUIZ
+  CODING_EXERCISE
+}
+
+model ContentApproval {
+  id             Int            @id @default(autoincrement())
+  contentType    ContentType
+  contentId      Int
+  professorId    Int
+  adminId        Int?
+  status         ApprovalStatus @default(PENDING)
+  adminNotes     String?
+  professorNotes String?
+  createdAt      DateTime       @default(now())
+  reviewedAt     DateTime?
+  professor      User           @relation("ContentApprovalProfessor", fields: [professorId], references: [id])
+  admin          User?          @relation("ContentApprovalAdmin", fields: [adminId], references: [id])
+}
+
+enum MessageStatus {
+  SENT
+  READ
+  ARCHIVED
+}
+
+model Message {
+  id         Int           @id @default(autoincrement())
+  senderId   Int
+  receiverId Int
+  subject    String
+  content    String
+  status     MessageStatus @default(SENT)
+  isRead     Boolean       @default(false)
+  readAt     DateTime?
+  createdAt  DateTime      @default(now())
+  sender     User          @relation("MessageSender", fields: [senderId], references: [id])
+  receiver   User          @relation("MessageReceiver", fields: [receiverId], references: [id])
+}
+
+enum ConversationType {
+  DIRECT
+  GROUP
+  SUPPORT
+}
+
+model Conversation {
+  id           Int                       @id @default(autoincrement())
+  type         ConversationType          @default(DIRECT)
+  name         String? // For group chats
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  participants ConversationParticipant[]
+  messages     ChatMessage[]
+}
+
+model ConversationParticipant {
+  id             Int          @id @default(autoincrement())
+  conversationId Int
+  userId         Int
+  joinedAt       DateTime     @default(now())
+  lastReadAt     DateTime?
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation("ChatParticipant", fields: [userId], references: [id])
+
+  @@unique([conversationId, userId], name: "conversation_user")
+}
+
+model ChatMessage {
+  id             Int          @id @default(autoincrement())
+  conversationId Int
+  senderId       Int
+  content        String
+  isRead         Boolean      @default(false)
+  readAt         DateTime?
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation("ChatMessageSender", fields: [senderId], references: [id])
+}
+
+enum SupportTicketStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum SupportTicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model SupportTicket {
+  id          Int                   @id @default(autoincrement())
+  userId      Int
+  adminId     Int?
+  subject     String
+  description String
+  status      SupportTicketStatus   @default(OPEN)
+  priority    SupportTicketPriority @default(MEDIUM)
+  category    String
+  resolution  String?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  resolvedAt  DateTime?
+  user        User                  @relation("SupportTicketUser", fields: [userId], references: [id])
+  admin       User?                 @relation("SupportTicketAdmin", fields: [adminId], references: [id])
+  replies     SupportTicketReply[]
+}
+
+model SupportTicketReply {
+  id         Int           @id @default(autoincrement())
+  ticketId   Int
+  userId     Int
+  content    String
+  isInternal Boolean       @default(false)
+  createdAt  DateTime      @default(now())
+  ticket     SupportTicket @relation(fields: [ticketId], references: [id])
+  user       User          @relation("SupportTicketReplyUser", fields: [userId], references: [id])
+}
+
+enum AssignmentType {
+  PROBLEM
+  HOMEWORK
+  MATERIAL
+}
+
+enum AssignmentStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  PUBLISHED
+}
+
+model Class {
+  id             Int                 @id @default(autoincrement())
+  name           String
+  description    String?
+  professorId    Int
+  invitationCode String              @unique
+  isActive       Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  professor      User                @relation("ClassProfessor", fields: [professorId], references: [id])
+  members        ClassMember[]
+  announcements  ClassAnnouncement[]
+  assignments    ClassAssignment[]
+}
+
+model ClassMember {
+  id        Int      @id @default(autoincrement())
+  classId   Int
+  studentId Int
+  joinedAt  DateTime @default(now())
+  class     Class    @relation(fields: [classId], references: [id])
+  student   User     @relation("ClassStudent", fields: [studentId], references: [id])
+
+  @@unique([classId, studentId], name: "classId_studentId")
+}
+
+model ClassAnnouncement {
+  id          Int      @id @default(autoincrement())
+  classId     Int
+  professorId Int
+  title       String
+  content     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  class       Class    @relation(fields: [classId], references: [id])
+  professor   User     @relation("AnnouncementProfessor", fields: [professorId], references: [id])
+}
+
+model ClassAssignment {
+  id          Int                         @id @default(autoincrement())
+  classId     Int
+  professorId Int
+  title       String
+  description String
+  type        AssignmentType
+  status      AssignmentStatus            @default(DRAFT)
+  difficulty  String
+  contentId   Int? // Reference to Lesson, Quiz, or CodingExercise
+  contentType String? // 'LESSON', 'QUIZ', 'CODING_EXERCISE'
+  dueDate     DateTime?
+  adminId     Int?
+  adminNotes  String?
+  createdAt   DateTime                    @default(now())
+  updatedAt   DateTime                    @updatedAt
+  approvedAt  DateTime?
+  class       Class                       @relation(fields: [classId], references: [id])
+  professor   User                        @relation("AssignmentProfessor", fields: [professorId], references: [id])
+  admin       User?                       @relation("AssignmentAdmin", fields: [adminId], references: [id])
+  submissions ClassAssignmentSubmission[]
+}
+
+model ClassAssignmentSubmission {
+  id           Int             @id @default(autoincrement())
+  assignmentId Int
+  studentId    Int
+  submissionId Int? // Reference to Submission (quiz or coding)
+  score        Float?
+  maxScore     Float?
+  submittedAt  DateTime        @default(now())
+  assignment   ClassAssignment @relation(fields: [assignmentId], references: [id])
+  student      User            @relation("AssignmentSubmissionStudent", fields: [studentId], references: [id])
 }

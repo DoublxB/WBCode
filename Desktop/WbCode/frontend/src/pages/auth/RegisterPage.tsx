@@ -97,7 +97,7 @@ const RegisterPage = () => {
         <button
           type="submit"
           className="w-full rounded-lg bg-primary py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
-          disabled={registerMutation.isLoading}
+          disabled={registerMutation.isPending}
         >
           Create account
         </button>

@@ -82,9 +82,9 @@ const ForgotPasswordPage = () => {
         <button
           type="submit"
           className="w-full rounded-lg bg-primary py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50 transition-colors"
-          disabled={forgotPassword.isLoading}
+          disabled={forgotPassword.isPending}
         >
-          {forgotPassword.isLoading ? 'Sending...' : 'Send Reset Link'}
+          {forgotPassword.isPending ? 'Sending...' : 'Send Reset Link'}
         </button>
 
         <p className="text-center text-xs text-slate-500">

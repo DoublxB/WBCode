@@ -25,7 +25,11 @@ export class CodingController {
   @Roles(Role.PROFESSOR, Role.ADMIN)
   @Post()
   create(@CurrentUser() user: any, @Body() dto: CreateCodingExerciseDto) {
-    return this.coding.createExercise(user, dto);
+    const userObj = {
+      id: user.sub || user.id,
+      role: user.role || user.role?.name
+    };
+    return this.coding.createExercise(userObj, dto);
   }
 
   @Post(':id/submit')
@@ -37,6 +41,7 @@ export class CodingController {
     return this.coding.submit(userId, id, dto);
   }
 }
+
 
 
 

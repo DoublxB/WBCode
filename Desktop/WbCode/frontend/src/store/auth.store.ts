@@ -44,8 +44,8 @@ export const authStore = create<AuthState>((set) => ({
   isAuthenticated: Boolean(initial.accessToken),
   setSession: ({ accessToken, refreshToken, user }) => {
       // Backend now returns role as string, just normalize to uppercase
-      const normalizedRole = typeof user.role === 'string' ? user.role.toUpperCase() : user.role;
-      const userWithStringRole = {
+      const normalizedRole = (typeof user.role === 'string' ? user.role.toUpperCase() : user.role) as Role;
+      const userWithStringRole: UserProfile = {
         ...user,
         role: normalizedRole
       };

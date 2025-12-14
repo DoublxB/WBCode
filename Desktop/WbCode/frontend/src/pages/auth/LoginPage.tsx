@@ -176,7 +176,7 @@ const LoginPage = () => {
               <button
                 type="submit"
                 className="w-full rounded-lg bg-gradient-to-r from-cyan-500 to-blue-500 py-3 text-sm font-semibold text-white hover:from-cyan-400 hover:to-blue-400 disabled:opacity-50 transition-all duration-300 shadow-lg shadow-cyan-500/30 hover:shadow-cyan-500/50"
-                disabled={login.isLoading}
+                disabled={login.isPending}
                 style={{
                   animation: 'fadeInUp 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.3s both'
                 }}

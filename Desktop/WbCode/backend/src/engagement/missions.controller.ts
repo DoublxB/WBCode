@@ -20,7 +20,11 @@ export class MissionsController {
   @Roles(Role.PROFESSOR, Role.ADMIN)
   @Post()
   create(@CurrentUser() user: any, @Body() dto: CreateMissionDto) {
-    return this.missions.createMission(user, dto);
+    const userObj = {
+      id: user.sub || user.id,
+      role: user.role || user.role?.name
+    };
+    return this.missions.createMission(userObj, dto);
   }
 
   @Post(':id/join')
@@ -37,6 +41,7 @@ export class MissionsController {
     return this.missions.submitProgress(userId, id, dto);
   }
 }
+
 
 
 

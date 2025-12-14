@@ -38,11 +38,13 @@ const AdminPanelPage = () => {
                 <td className="px-4 py-3 text-white">{user.firstName}</td>
                 <td className="px-4 py-3 text-slate-300">{user.email}</td>
                 <td className="px-4 py-3">
-                  <span className="rounded-full bg-slate-800 px-3 py-1 text-xs uppercase">{user.role.name}</span>
+                  <span className="rounded-full bg-slate-800 px-3 py-1 text-xs uppercase">
+                    {typeof user.role === 'string' ? user.role : user.role?.name || 'UNKNOWN'}
+                  </span>
                 </td>
                 <td className="px-4 py-3">
                   <select
-                    value={user.role.name}
+                    value={typeof user.role === 'string' ? user.role : user.role?.name || 'STUDENT'}
                     onChange={(e) => updateRole.mutate({ id: user.id, role: e.target.value as Role })}
                     className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-1 text-xs text-white"
                   >

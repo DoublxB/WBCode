@@ -28,7 +28,7 @@ const ReportsPage = () => {
         <button
           onClick={() => exportReport.mutate()}
           className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-          disabled={exportReport.isLoading}
+          disabled={exportReport.isPending}
         >
           Export CSV
         </button>

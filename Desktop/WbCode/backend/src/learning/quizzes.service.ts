@@ -20,6 +20,7 @@ export class QuizzesService {
         title: dto.title,
         description: dto.description,
         timeLimit: dto.timeLimit,
+        status: 'DRAFT',
         questions: {
           create: dto.questions.map((q) => ({
             prompt: q.prompt,
@@ -35,10 +36,46 @@ export class QuizzesService {
     return quiz;
   }
 
+  async listQuizzes() {
+    return this.prisma.quiz.findMany({
+      include: {
+        lesson: {
+          select: {
+            difficulty: true,
+            tags: true,
+            title: true
+          }
+        },
+        questions: {
+          select: {
+            id: true
+          }
+        },
+        _count: {
+          select: {
+            submissions: true
+          }
+        }
+      },
+      orderBy: {
+        id: 'desc'
+      }
+    });
+  }
+
   getQuiz(id: number) {
     return this.prisma.quiz.findUnique({
       where: { id },
-      include: { questions: true }
+      include: {
+        questions: true,
+        lesson: {
+          select: {
+            difficulty: true,
+            tags: true,
+            title: true
+          }
+        }
+      }
     });
   }
 

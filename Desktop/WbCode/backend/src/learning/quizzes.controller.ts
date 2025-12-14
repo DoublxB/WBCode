@@ -13,10 +13,19 @@ import { SubmitQuizDto } from './dto/submit-quiz.dto';
 export class QuizzesController {
   constructor(private readonly quizzes: QuizzesService) {}
 
+  @Get()
+  listQuizzes() {
+    return this.quizzes.listQuizzes();
+  }
+
   @Roles(Role.PROFESSOR, Role.ADMIN)
   @Post()
   create(@CurrentUser() user: any, @Body() dto: CreateQuizDto) {
-    return this.quizzes.createQuiz(user, dto);
+    const userObj = {
+      id: user.sub || user.id,
+      role: user.role || user.role?.name
+    };
+    return this.quizzes.createQuiz(userObj, dto);
   }
 
   @Get(':id')

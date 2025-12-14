@@ -15,7 +15,11 @@ export class ProfessorDashboardController {
   @Roles(Role.PROFESSOR, Role.ADMIN)
   @Get('dashboard')
   summary(@CurrentUser() user: any) {
-    return this.dashboard.getDashboard(user);
+    const userObj = {
+      id: user.sub || user.id,
+      role: user.role || user.role?.name
+    };
+    return this.dashboard.getDashboard(userObj);
   }
 
   @Roles(Role.PROFESSOR, Role.ADMIN)
@@ -25,7 +29,11 @@ export class ProfessorDashboardController {
     @Query('format') format: 'csv' | 'pdf' = 'csv',
     @Res() res: Response
   ) {
-    const result = await this.dashboard.exportProgressReport(user, format);
+    const userObj = {
+      id: user.sub || user.id,
+      role: user.role || user.role?.name
+    };
+    const result = await this.dashboard.exportProgressReport(userObj, format);
     res.setHeader('Content-Type', result.mime);
     res.setHeader('Content-Disposition', `attachment; filename="${result.filename}"`);
     res.send(result.data);

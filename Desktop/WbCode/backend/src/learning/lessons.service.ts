@@ -37,7 +37,8 @@ export class LessonsService {
         content: dto.content,
         difficulty: dto.difficulty,
         tags: dto.tags ?? [],
-        authorId: author.id
+        authorId: author.id,
+        status: 'DRAFT'
       }
     });
   }

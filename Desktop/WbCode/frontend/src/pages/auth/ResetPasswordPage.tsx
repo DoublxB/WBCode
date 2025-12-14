@@ -136,9 +136,9 @@ const ResetPasswordPage = () => {
         <button
           type="submit"
           className="w-full rounded-lg bg-primary py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50 transition-colors"
-          disabled={resetPassword.isLoading || !form.token}
+          disabled={resetPassword.isPending || !form.token}
         >
-          {resetPassword.isLoading ? 'Resetting...' : 'Reset Password'}
+          {resetPassword.isPending ? 'Resetting...' : 'Reset Password'}
         </button>
 
         <p className="text-center text-xs text-slate-500">

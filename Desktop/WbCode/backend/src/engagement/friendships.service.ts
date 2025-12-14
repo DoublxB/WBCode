@@ -7,8 +7,36 @@ export class FriendshipsService {
 
   listFriends(userId: number) {
     return this.prisma.friendship.findMany({
-      where: { requester: userId },
-      include: { addresseeUser: true }
+      where: {
+        OR: [
+          { requester: userId, status: 'accepted' },
+          { addressee: userId, status: 'accepted' }
+        ]
+      },
+      include: {
+        requesterUser: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            avatarUrl: true,
+            xp: true,
+            level: true
+          }
+        },
+        addresseeUser: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
+            avatarUrl: true,
+            xp: true,
+            level: true
+          }
+        }
+      }
     });
   }
 
@@ -33,6 +61,15 @@ export class FriendshipsService {
     });
   }
 }
+
+
+
+
+
+
+
+
+
 
 
 

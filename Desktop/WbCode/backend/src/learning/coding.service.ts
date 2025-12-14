@@ -28,15 +28,55 @@ export class CodingService {
       throw new ForbiddenException('Only professors can create coding exercises');
     }
     await this.prisma.lesson.findUniqueOrThrow({ where: { id: dto.lessonId } });
-    return this.prisma.codingExercise.create({ data: dto });
+    return this.prisma.codingExercise.create({ 
+      data: {
+        ...dto,
+        status: 'DRAFT'
+      }
+    });
   }
 
   async submit(userId: number, codingId: number, dto: SubmitCodeDto) {
     const exercise = await this.getExercise(codingId);
-    const result = await this.sandbox.execute(exercise.language as SupportedLanguage, dto.sourceCode, dto.stdin ?? '');
+    
+    // Verificare anti-copiat: multiple criterii
+    const SUSPICIOUS_TYPING_SPEED = 25; // caractere/secundă
+    const LARGE_PASTE_THRESHOLD = 50; // caractere
+    
+    // Verifică dacă există paste mare (indiferent de rata medie)
+    const hasLargePaste = dto.hasLargePaste || (dto.largestPasteSize && dto.largestPasteSize > LARGE_PASTE_THRESHOLD);
+    const isSuspicious = (dto.typingSpeed && dto.typingSpeed > SUSPICIOUS_TYPING_SPEED) || hasLargePaste;
+    
+    // Debug logging
+    console.log('🔍 Anti-copy check:', {
+      typingSpeed: dto.typingSpeed,
+      timeSpent: dto.timeSpent,
+      hasLargePaste,
+      largestPasteSize: dto.largestPasteSize,
+      isSuspicious,
+      codeLength: dto.sourceCode.length,
+      userId,
+      exerciseId: codingId
+    });
+    
+    const result = await this.sandbox.execute(
+      exercise.language as SupportedLanguage, 
+      dto.sourceCode, 
+      dto.stdin ?? ''
+    );
+    
     const success = result.exitCode === 0;
-    const score = success ? 100 : 0;
-    const feedback = success ? 'Execution successful' : `Errors: ${result.stderr}`;
+    let score = success ? 100 : 0;
+    
+    // Aplicăm penalizare dacă e suspect
+    if (isSuspicious && success) {
+      score = Math.max(0, score - 20); // Penalizare de 20 puncte
+      console.log('⚠️ Penalty applied! Score reduced from 100 to', score);
+    }
+    
+    const feedback = success 
+      ? (isSuspicious ? 'Execution successful (⚠️ Suspicious typing pattern detected)' : 'Execution successful')
+      : `Errors: ${result.stderr}`;
 
     await this.prisma.submission.create({
       data: {
@@ -49,15 +89,24 @@ export class CodingService {
         feedback,
         runtimeStdout: result.stdout,
         runtimeStderr: result.stderr,
-        explanation: success ? 'Great job! Try optimizing further.' : 'Review the error output to fix your code.'
+        explanation: isSuspicious 
+          ? '⚠️ Your submission was flagged for suspicious typing patterns. Please write code yourself.'
+          : (success ? 'Great job! Try optimizing further.' : 'Review the error output to fix your code.')
       }
     });
 
-    if (success) {
+    // Nu acordăm XP dacă e suspect
+    if (success && !isSuspicious) {
       await this.gamification.awardXP(userId, 50, `Coding exercise: ${exercise.title}`);
     }
 
-    return { success, stdout: result.stdout, stderr: result.stderr, score };
+    return { 
+      success, 
+      stdout: result.stdout, 
+      stderr: result.stderr, 
+      score,
+      isSuspicious 
+    };
   }
 }
 
