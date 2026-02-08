@@ -13,8 +13,8 @@ export class MissionsController {
   constructor(private readonly missions: MissionsService) {}
 
   @Get()
-  list() {
-    return this.missions.listActiveMissions();
+  list(@CurrentUser('sub') userId: number) {
+    return this.missions.listActiveMissionsForUser(userId);
   }
 
   @Roles(Role.PROFESSOR, Role.ADMIN)
@@ -39,6 +39,11 @@ export class MissionsController {
     @Body() dto: MissionProgressDto
   ) {
     return this.missions.submitProgress(userId, id, dto);
+  }
+
+  @Post(':id/claim')
+  claim(@CurrentUser('sub') userId: number, @Param('id', ParseIntPipe) id: number) {
+    return this.missions.claimReward(userId, id);
   }
 }
 

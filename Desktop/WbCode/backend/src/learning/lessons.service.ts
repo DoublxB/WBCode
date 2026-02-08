@@ -3,10 +3,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateLessonDto } from './dto/create-lesson.dto';
 import { UpdateLessonDto } from './dto/update-lesson.dto';
 import { Role } from '../common/constants/roles';
+import { GamificationService } from '../gamification/gamification.service';
 
 @Injectable()
 export class LessonsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly gamification: GamificationService
+  ) {}
 
   listLessons() {
     return this.prisma.lesson.findMany({
@@ -63,6 +67,58 @@ export class LessonsService {
     }
     await this.prisma.lesson.delete({ where: { id } });
     return { success: true };
+  }
+
+  /**
+   * Marchează un curs ca citit de către un utilizator
+   */
+  async markLessonAsRead(userId: number, lessonId: number) {
+    const lesson = await this.prisma.lesson.findUnique({ where: { id: lessonId } });
+    if (!lesson) {
+      throw new NotFoundException('Lesson not found');
+    }
+
+    // Verifică dacă cursul a fost deja marcat ca citit
+    const existingRead = await this.prisma.lessonRead.findUnique({
+      where: {
+        userId_lessonId: {
+          userId,
+          lessonId
+        }
+      }
+    });
+
+    if (existingRead) {
+      return existingRead; // Deja citit
+    }
+
+    // Marchează cursul ca citit
+    const lessonRead = await this.prisma.lessonRead.create({
+      data: {
+        userId,
+        lessonId
+      }
+    });
+
+    // Verifică badge-urile pentru cursuri citite
+    await this.gamification.checkLessonReadBadges(userId);
+
+    return lessonRead;
+  }
+
+  /**
+   * Verifică dacă un curs a fost citit de către un utilizator
+   */
+  async isLessonRead(userId: number, lessonId: number): Promise<boolean> {
+    const read = await this.prisma.lessonRead.findUnique({
+      where: {
+        userId_lessonId: {
+          userId,
+          lessonId
+        }
+      }
+    });
+    return !!read;
   }
 }
 

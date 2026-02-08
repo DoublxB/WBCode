@@ -10,8 +10,13 @@ export interface UserProfile {
   role: Role;
   xp: number;
   level: number;
+  wbcCoins?: number;
+  streak?: number;
+  badges?: any[];
   avatarUrl?: string | null;
   title?: string | null;
+  bio?: string | null;
+  cosmeticsEquipped?: Record<string, string | null>;
 }
 
 type AuthState = {

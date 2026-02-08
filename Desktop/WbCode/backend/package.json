@@ -92,5 +92,8 @@
     "src/**/*.ts": [
       "eslint --fix"
     ]
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

@@ -119,3 +119,10 @@ const LeaderboardPodium = ({ topThree, currentUserId }: LeaderboardPodiumProps) 
 
 export default LeaderboardPodium;
 
+
+
+
+
+
+
+

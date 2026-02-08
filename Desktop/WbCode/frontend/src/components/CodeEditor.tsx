@@ -138,7 +138,7 @@ const CodeEditor = ({ language, value, onChange, onTypingMetrics }: CodeEditorPr
   };
 
   return (
-    <div className="h-full">
+    <div className="h-full bg-[#1e1e1e]">
       <Editor
         height="100%"
         theme="vs-dark"
@@ -148,22 +148,38 @@ const CodeEditor = ({ language, value, onChange, onTypingMetrics }: CodeEditorPr
         options={{
           minimap: { enabled: false },
           fontSize: 14,
+          fontFamily: 'JetBrains Mono, Fira Code, Consolas, monospace',
+          fontLigatures: true,
           automaticLayout: true,
           padding: { top: 16, bottom: 16 },
           lineNumbers: 'on',
-          roundedSelection: true,
+          lineNumbersMinChars: 3,
+          roundedSelection: false,
           scrollBeyondLastLine: false,
           readOnly: false,
           cursorStyle: 'line',
+          cursorBlinking: 'smooth',
           wordWrap: 'on',
-          formatOnPaste: false, // Dezactivăm formatarea la paste pentru a detecta mai bine copierea
+          formatOnPaste: false,
           formatOnType: true,
           tabSize: 2,
           insertSpaces: true,
           smoothScrolling: true,
           renderWhitespace: 'selection',
           renderLineHighlight: 'all',
-          bracketPairColorization: { enabled: true }
+          bracketPairColorization: { enabled: true },
+          guides: {
+            bracketPairs: true,
+            indentation: true
+          },
+          colorDecorators: true,
+          contextmenu: true,
+          mouseWheelZoom: false,
+          quickSuggestions: true,
+          suggestOnTriggerCharacters: true,
+          acceptSuggestionOnEnter: 'on',
+          tabCompletion: 'on',
+          wordBasedSuggestions: 'allDocuments'
         }}
       />
     </div>

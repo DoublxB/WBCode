@@ -1,12 +1,42 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 /* Import Inter font */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* Import JetBrains Mono for code */
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* WBC Coin Animations */
+@keyframes spin-coin {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-15px); }
+}
+
+.coin-3d {
+  /* Adaugă umbre pentru efect 3D */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.coin-spin {
+  animation: spin-coin 4s linear infinite;
+}
+
+.coin-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Efect de strălucire la hover pe container */
+.glow-effect:hover {
+  filter: drop-shadow(0 0 15px rgba(234, 179, 8, 0.5));
+}
 
 :root {
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
@@ -20,44 +50,44 @@ body {
   overflow-x: hidden; /* Hide horizontal scrollbar */
 }
 
-/* Custom scrollbar styling */
+/* Custom scrollbar styling - Dark mode optimized */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.5);
+  background: rgba(9, 9, 11, 0.5);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.5);
+  background: rgba(63, 63, 70, 0.5);
   border-radius: 4px;
   transition: background 0.2s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.8);
+  background: rgba(82, 82, 91, 0.8);
 }
 
-/* Custom scrollbar for specific elements */
+/* Custom scrollbar for specific elements - Dark mode */
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.3);
+  background: rgba(9, 9, 11, 0.3);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.4);
+  background: rgba(63, 63, 70, 0.4);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.6);
+  background: rgba(82, 82, 91, 0.6);
 }
 
 /* Toast animation */
@@ -76,10 +106,123 @@ body {
   animation: slide-in 0.3s ease-out;
 }
 
-/* Hide horizontal scrollbar but allow scrolling if needed */
+/* Badge unlock toast (bottom-right) */
+.badge-toast-container {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(360px, calc(100vw - 24px));
+}
+
+.badge-toast {
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: linear-gradient(135deg, rgba(2, 6, 23, 0.92), rgba(15, 23, 42, 0.92));
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  transform: translateX(110%);
+  opacity: 0;
+  animation: badge-toast-in 420ms cubic-bezier(.2,.9,.2,1) forwards;
+}
+
+@keyframes badge-toast-in {
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.badge-toast-inner {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding: 14px 14px;
+  align-items: center;
+}
+
+.badge-toast-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.18), rgba(99, 102, 241, 0.14));
+  border: 1px solid rgba(59, 130, 246, 0.24);
+  flex-shrink: 0;
+}
+
+.badge-toast-emoji {
+  font-size: 22px;
+}
+
+.badge-toast-content {
+  min-width: 0;
+}
+
+.badge-toast-title {
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.2px;
+  color: rgba(248, 250, 252, 0.95);
+  margin-bottom: 3px;
+}
+
+.badge-toast-desc {
+  font-size: 12px;
+  color: rgba(203, 213, 225, 0.9);
+  line-height: 1.25rem;
+}
+
+/* Celebration: Shine */
+.badge-toast-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.10) 18%,
+    transparent 36%
+  );
+  transform: translateX(-120%);
+  animation: badge-shine 900ms ease-out 160ms forwards;
+  pointer-events: none;
+}
+
+@keyframes badge-shine {
+  to { transform: translateX(120%); }
+}
+
+/* Celebration: Confetti (simple CSS confetti overlay) */
+.badge-toast-confetti::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.9) 0 2px, transparent 3px),
+    radial-gradient(circle at 30% 80%, rgba(16, 185, 129, 0.9) 0 2px, transparent 3px),
+    radial-gradient(circle at 70% 30%, rgba(234, 179, 8, 0.9) 0 2px, transparent 3px),
+    radial-gradient(circle at 90% 60%, rgba(244, 63, 94, 0.9) 0 2px, transparent 3px);
+  opacity: 0;
+  animation: badge-confetti 900ms ease-out 120ms forwards;
+  pointer-events: none;
+}
+
+@keyframes badge-confetti {
+  0% { opacity: 0; transform: translateY(8px); }
+  40% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+
+/* Hide horizontal scrollbar but allow scrolling if needed - Dark mode */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(100, 116, 139, 0.5) rgba(15, 23, 42, 0.5);
+  scrollbar-color: rgba(63, 63, 70, 0.5) rgba(9, 9, 11, 0.5);
 }
 
 /* Prevent horizontal overflow */
@@ -204,6 +347,15 @@ button, a, input, select, textarea {
   transition: all 0.2s ease-in-out;
 }
 
+/* Hide scrollbars but keep scrolling (use on horizontal map panes) */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE/Edge legacy */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
 /* Focus states for accessibility */
 button:focus-visible,
 a:focus-visible,
@@ -231,6 +383,212 @@ select:focus-visible {
 
 .animate-pulse-slow {
   animation: pulse-slow 3s ease-in-out infinite;
+}
+
+/* Glow animation */
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(99, 102, 241, 0.8), 0 0 60px rgba(139, 92, 246, 0.4);
+  }
+}
+
+/* Shine animation */
+@keyframes shine {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Float animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Bounce slow animation */
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Spin slow animation */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Gradient shift animation */
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+.animate-shine {
+  animation: shine 3s linear infinite;
+  background-size: 200% 100%;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 3s linear infinite;
+}
+
+.animate-gradient-shift {
+  animation: gradient-shift 8s ease infinite;
+  background-size: 200% 200%;
+}
+
+/* Circuit/PCB flow (for roadmap connectors) */
+@keyframes circuit-flow {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -160; }
+}
+
+.animate-circuit-flow {
+  animation: circuit-flow 2.2s linear infinite;
+}
+
+/* Hacker-green signal sweep (used on roadmap completed connectors) */
+@keyframes circuit-signal {
+  from { stroke-dashoffset: 0; opacity: 0.9; }
+  to { stroke-dashoffset: -220; opacity: 0.9; }
+}
+
+.animate-circuit-signal {
+  animation: circuit-signal 1.6s linear infinite;
+}
+
+/* ---------------------------------------------
+   Minimal "premium" motion (performance-safe)
+   - Use transform/opacity (GPU-friendly)
+   - Respect prefers-reduced-motion
+---------------------------------------------- */
+
+/* Page enter (route change) */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 6px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.page-enter {
+  animation: page-enter 220ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+  will-change: transform, opacity;
+}
+
+/* Staggered list/card enter (opt-in, use inline delay) */
+@keyframes item-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.item-enter {
+  animation: item-enter 260ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+  will-change: transform, opacity;
+}
+
+/* Button micro-press (opt-in) */
+.btn-press {
+  transition-property: transform, box-shadow, background-color, border-color, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.2, 0.9, 0.2, 1);
+  will-change: transform;
+}
+.btn-press:active {
+  transform: scale(0.98);
+}
+
+/* Skeleton shimmer (opt-in; replaces plain pulse) */
+@keyframes skeleton-shimmer {
+  0% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgba(51, 65, 85, 0.55); /* slate-700-ish */
+}
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-120%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(148, 163, 184, 0.18) 22%,
+    rgba(226, 232, 240, 0.10) 44%,
+    transparent 66%
+  );
+  animation: skeleton-shimmer 1100ms ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* Reduced motion: keep UI crisp, remove movement */
+@media (prefers-reduced-motion: reduce) {
+  .page-enter {
+    animation: none !important;
+  }
+  .item-enter {
+    animation: none !important;
+  }
+  .btn-press {
+    transition: none !important;
+  }
+  .skeleton::after {
+    animation: none !important;
+  }
+  .animate-circuit-flow {
+    animation: none !important;
+  }
+  .animate-circuit-signal {
+    animation: none !important;
+  }
 }
 
 

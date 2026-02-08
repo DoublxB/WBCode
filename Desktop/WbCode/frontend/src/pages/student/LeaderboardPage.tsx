@@ -1,13 +1,14 @@
-import { useLeaderboard, useProfile } from '../../api/hooks';
+import { useLeaderboard, useProfile, useLeaderboardPeriod } from '../../api/hooks';
 import LeaderboardList from '../../components/LeaderboardList';
 import LeaderboardPodium from '../../components/LeaderboardPodium';
 import SkeletonLoader from '../../components/SkeletonLoader';
 import EmptyState from '../../components/EmptyState';
-import { Trophy, Users } from 'lucide-react';
+import { Trophy, Users, Clock } from 'lucide-react';
 
 const LeaderboardPage = () => {
   const { data: leaderboard, isLoading } = useLeaderboard();
   const { data: profile } = useProfile();
+  const { data: periodInfo } = useLeaderboardPeriod();
 
   if (isLoading) {
     return (
@@ -39,15 +40,40 @@ const LeaderboardPage = () => {
   return (
     <div className="space-y-8">
       <header>
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 rounded-lg bg-primary-500/20">
-            <Trophy className="h-6 w-6 text-primary-400" />
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-primary-500/20">
+              <Trophy className="h-6 w-6 text-primary-400" />
+            </div>
+            <div>
+              <p className="text-sm text-slate-400">Friendly rivalry</p>
+              <h1 className="text-3xl font-semibold text-white">Leaderboard</h1>
+            </div>
           </div>
-          <div>
-            <p className="text-sm text-slate-400">Friendly rivalry</p>
-            <h1 className="text-3xl font-semibold text-white">Leaderboard</h1>
-          </div>
+          {periodInfo && (
+            <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary-500/10 border border-primary-500/30">
+              <Clock className="h-4 w-4 text-primary-400" />
+              <div className="text-right">
+                <p className="text-xs text-slate-400">Perioadă curentă</p>
+                <p className="text-sm font-semibold text-primary-400">
+                  {periodInfo.daysRemaining} zile rămase
+                </p>
+              </div>
+            </div>
+          )}
         </div>
+        {periodInfo && (
+          <div className="mt-3 p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
+            <p className="text-xs text-slate-400">
+              Leaderboard-ul se resetează la fiecare 30 de zile. Perioada curentă: {periodInfo.daysElapsed}/30 zile.
+              {periodInfo.daysRemaining > 0 && (
+                <span className="text-primary-400 ml-1">
+                  Resetare în {periodInfo.daysRemaining} zile.
+                </span>
+              )}
+            </p>
+          </div>
+        )}
       </header>
 
       {/* Podium for Top 3 */}

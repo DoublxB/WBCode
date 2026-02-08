@@ -1,0 +1,629 @@
+WBCode — FULL APPLICATION CONTEXT (for Gemini / LLM)
+====================================================
+
+Goal of this file
+-----------------
+Provide a comprehensive, structured description of WBCode so an LLM can:
+- Understand what the product does (by role: Student / Professor / Admin).
+- Understand the architecture (backend, frontend, sandbox worker).
+- Know the data model (Prisma models/enums) and key relationships.
+- Know the API surface actually used by the frontend (endpoints list).
+- Know the gamification/learning-science loops implemented.
+- Continue development without breaking existing flows.
+
+Repository root
+---------------
+This file lives at: `C:\Users\impact\Desktop\WbCode\context.txt`
+
+
+1) Product overview
+-------------------
+WBCode is a modern, gamified CS learning platform (EdTech) with:
+- Interactive CodeLab (Monaco editor, run/submit code, sandbox execution).
+- Quizzes (timed, multiple question types) + quiz tracks/hub.
+- Roadmap learning path with module gating + Final Boss battles.
+- Gamification: XP, levels, streaks, badges (large system), leaderboard seasons, WBC Coins.
+- Social: friends, 1v1 challenges, chat (direct + support).
+- Classes: professor creates class, students join via invitation code, announcements + assignments, local per-class leaderboard UI, assignment submission and approvals.
+- Admin suite: user management, approvals, support tickets, admin messaging, analytics, dev tools.
+
+
+2) Tech stack
+-------------
+Backend:
+- NestJS (TypeScript)
+- Prisma ORM
+- MySQL
+- JWT authentication (access + refresh)
+- Security middleware: Helmet, CORS
+- Scheduling: @nestjs/schedule (cron tasks)
+- Rate limiting: @nestjs/throttler
+- Sandbox integration: executes C/C++/Python via a separate worker
+
+Frontend:
+- Vite + React + TypeScript
+- TailwindCSS + design system (dark-first, “pro SaaS” feel)
+- React Router (role-aware routes + redirects)
+- TanStack Query (React Query) for caching/mutations
+- Zustand for auth/session store
+- Monaco Editor
+- Vitest + React Testing Library (component tests)
+
+Sandbox Worker:
+- Node worker executing code securely (C/C++/Python)
+- Backend dispatches execution requests and validates results
+
+
+3) Repo structure (high level)
+------------------------------
+backend/
+  prisma/
+    schema.prisma
+    seed.ts
+  src/
+    app.module.ts
+    auth/
+    users/
+    learning/        (coding, quizzes, lessons)
+    gamification/    (xp, coins, badges, leaderboard scheduling)
+    engagement/      (missions, challenges, friendships)
+    professor/       (classes, announcements, assignments, analytics, reports)
+    admin/           (users, approvals, messaging, analytics, support)
+    chat/
+    analytics/       (events + metrics + referrals)
+    sandbox/         (worker integration)
+frontend/
+  src/
+    router.tsx
+    api/             (axios client + react-query hooks)
+    store/           (auth store)
+    templates/       (AppLayout)
+    pages/           (student, professor, admin, auth, chat)
+    components/      (UI building blocks, XP toasts, charts, etc.)
+    data/            (education curriculum, quiz tracks)
+shared/
+  types.ts           (shared types)
+docs/
+  api.md
+  architecture.md
+  IMPLEMENTATION_STATUS.md
+  FUNCTIONALITY_CHECKLIST.md
+  VERIFICATION_REPORT.md
+
+
+4) Roles and permissions
+------------------------
+Roles:
+- STUDENT
+- PROFESSOR
+- ADMIN
+
+Authorization:
+- JWT access token is attached via axios interceptor in frontend (`Authorization: Bearer <token>`).
+- RolesGuard checks required roles (now normalized to uppercase and throws an explicit Forbidden message).
+- Many endpoints are protected by JwtAuthGuard + RolesGuard.
+
+Important nuance:
+- `/coding` listing is role-sensitive:
+  - STUDENT: only roadmap module categories (6 modules), excludes boss categories.
+  - PROFESSOR/ADMIN: broader list (includes “legacy/custom/edu” categories, excluding boss).
+
+
+5) Frontend routing (major pages)
+---------------------------------
+Auth:
+- /auth/login
+- /auth/register
+- /auth/forgot-password
+- /auth/reset-password
+
+Student:
+- / (StudentDashboard)
+- /roadmap (RoadmapPage)
+- /roadmap/boss/:moduleSlug (BossBattlePage)
+- /code-lab and /codelab (CodeLabPage)
+- /quizzes (QuizHubPage)
+- /quizzes/:categorySlug (QuizTrackDetailPage)
+- /quizzes/explore (QuizExplorePage)
+- /quizzes/play/:quizId (QuizPlayPage)
+- /leaderboard (LeaderboardPage)
+- /missions (MissionsPage)
+- /missions/:id/solve (MissionSolvePage)
+- /missions/:id/code (MissionCodeSolvePage)
+- /challenges (ChallengesPage)
+- /challenges/:id/solve (ChallengeSolvePage)
+- /friends (FriendsPage)
+- /chat (ChatPage)
+- /profile (ProfilePage)
+- /cosmetics (CosmeticShopPage)
+- /classes (StudentClassesPage)
+- /classes/:id (ClassDetailPage)
+- /classes/:classId/assignments/:assignmentId (AssignmentDetailPage)
+
+Professor:
+- /professor (ProfessorDashboardPage)
+- /professor/content (ContentBuilderPage)
+- /professor/reports (ReportsPage)
+- /professor/classes (ClassesPage)
+- /professor/classes/:id (ClassDetailPage — shared dashboard UI; teacher actions appear when role is PROF/ADMIN)
+- /professor/classes/:classId/create-assignment (CreateAssignmentPage)
+
+Admin:
+- /admin (AdminDashboardPage)
+- /admin/analytics (AdminAnalyticsPage)
+- /admin/users (AdminPanelPage)
+- /admin/messages (AdminMessagingPage)
+- /admin/approvals (AdminApprovalsPage)
+- /admin/assignment-approvals (AssignmentApprovalsPage)
+- /admin/support (AdminSupportPage)
+
+
+6) Key systems & features (by role)
+-----------------------------------
+
+6.1 Student features
+- Authentication flows:
+  - Register/Login (JWT access + refresh)
+  - Token refresh on 401
+  - Forgot password + Reset password
+
+- Student Dashboard:
+  - XP, level, streak, rank
+  - Stats and charts (progress, activity)
+
+- CodeLab:
+  - Exercise list with filters (search, difficulty, solved/unsolved)
+  - Monaco editor: C / C++ / Python, syntax highlighting, formatting support
+  - Run/Submit:
+    - Sends code + optional stdin
+    - Displays stdout/stderr
+    - Success/Failure screen + feedback
+  - Anti-copy detection:
+    - Typing speed thresholds
+    - Large paste detection
+    - Score penalty for suspicious patterns
+  - Hint system:
+    - “Get Hint” endpoint
+    - Custom hint (exercise.hint) or generated hint
+    - (Platform concept) can cost WBC Coins depending on implementation
+  - Activity events:
+    - CODELAB_START analytics event (per exercise per session)
+
+- Roadmap:
+  - 6 modules: procedural-programming, object-oriented, data-structures, algorithms-logic, databases-sql, software-architecture
+  - Gating: LOCKED / ACTIVE / COMPLETED based on exercises + boss completion set
+  - Navigation to CodeLab via `?category=moduleSlug`
+
+- Boss Battles:
+  - Fetch tests for a moduleSlug
+  - Complete and record boss completion when passed
+
+- Quizzes:
+  - Quiz hub + tracks + quiz runner
+  - Timed quiz play
+  - Submit answers, get score + feedback/explanations
+
+- Missions:
+  - View missions
+  - Update progress (mission solve flows)
+  - Claim rewards (XP/coins)
+  - Analytics events: MISSIONS_VIEW, MISSION_CLAIM
+
+- Challenges (1v1):
+  - Create a challenge against another user (often friend)
+  - Accept challenge
+  - Solve via coding submit + challenge submit endpoint
+  - Tracks challenge stats for badges and XP bonuses
+
+- Friends:
+  - Add friend (often from leaderboard)
+  - List friends
+
+- Chat:
+  - Direct conversations
+  - Support conversation
+  - Polling-based “real-time” (2s poll interval)
+
+- Classes:
+  - Join class via invitation code
+  - View joined classes list
+  - Class dashboard:
+    - Announcements
+    - Assignments
+    - Local per-class leaderboard computed from class members’ XP/levels
+    - Assignment submission
+
+- Profile & customization:
+  - Profile page: XP, level, badges, submissions history
+  - Edit profile fields (avatar/title/bio)
+  - Cosmetics shop + equip/unequip
+
+
+6.2 Professor features
+- Professor dashboard:
+  - High-level stats and class insights
+  - Analytics endpoints for classes (summary, leaderboard, timeseries, students, risks, modules)
+
+- Content builder:
+  - Create lessons
+  - Create quizzes
+  - Create coding exercises
+  - Submit content for admin approval (where applicable)
+
+- Weekly missions:
+  - Create/manage missions
+
+- Classes management:
+  - Create class (generates unique invitation code)
+  - Regenerate invitation code
+  - Post announcements
+  - Create assignments (PROBLEM/HOMEWORK/MATERIAL)
+  - View class members
+
+- Assignment creation enhancements:
+  - “Problem picker” modal to select an existing CodingExercise from the platform
+  - Curriculum-guided selection (education-curriculum) with coverage counts
+  - Auto-fills assignment fields when selecting an exercise
+
+- Reports:
+  - Export class reports (CSV/PDF-ready per docs)
+
+- Chat:
+  - Direct messages with students
+  - Support chat with admin
+
+
+6.3 Admin features
+- Admin dashboard:
+  - General admin overview
+  - Dev tools actions (boost, grant all badges, etc.)
+
+- User management:
+  - List users
+  - Update roles
+
+- Content approvals:
+  - Pending approvals list
+  - Review (approve/reject/revisions)
+  - My submissions view
+  - Submit content for approval
+
+- Assignment approvals:
+  - Pending assignments list
+  - Review assignment
+
+- Support tickets:
+  - View tickets
+  - Assign ticket
+  - Reply
+  - Resolve
+
+- Admin messaging:
+  - Send messages to users/professors
+  - Unread count
+  - Mark as read
+
+- Analytics (platform metrics):
+  - Collect activity events
+  - DAU / mission DAU / completion rate
+  - Referral invites + viral coefficient/conversion metrics
+
+- Chat:
+  - Support chat with students/professors
+  - Direct chat with professors
+
+
+7) Learning-science / “science-based” mechanics (implemented)
+-------------------------------------------------------------
+These are the “science-informed” loops present in the product:
+
+Immediate feedback loops:
+- Coding autograding via sandbox + testCases/output validation
+- Quiz autograding + explanations per question
+- Failure/Success screens and contextual guidance
+
+Operant conditioning / reinforcement:
+- XP rewards for successful completion
+- Visible progress bars and level-ups
+- Badge unlock events + toast notifications
+
+Habit formation:
+- Streak tracking (daily consistency)
+- Streak bonus logic (backend)
+- Scheduled resets/rollups via cron
+
+Goal-setting & commitment devices:
+- Weekly missions with progress tracking and reward claiming
+- Mission types cover multiple activities (coding/quizzes/active days/etc.)
+
+Social learning / competition:
+- Friends system
+- Challenges 1v1 (competition + social proof)
+- Leaderboard (top 50) with seasonal structure
+- Local per-class leaderboard (within class)
+
+Engagement analytics (data-informed iteration):
+- ActivityEvent tracking (APP_OPEN, MISSIONS_VIEW, MISSION_CLAIM, CODELAB_START)
+- Metrics aggregation (DAU, completion rate, etc.)
+
+Anti-cheating / integrity:
+- Suspicious typing detection (speed/paste thresholds)
+- Score penalty for suspicious patterns (even when correct)
+
+
+8) API endpoints (as actually used by the frontend)
+---------------------------------------------------
+Frontend axios baseURL is `/api` (see `frontend/src/api/client.ts`).
+
+Authentication:
+- POST /auth/login
+- POST /auth/register
+- POST /auth/forgot-password
+- POST /auth/reset-password
+- POST /auth/refresh (used implicitly in interceptor)
+
+Users / profile / notifications:
+- GET  /users/profile
+- PATCH /users/profile
+- GET  /users/dashboard-stats
+- GET  /users/notifications
+
+Lessons / quizzes:
+- GET  /lessons
+- POST /lessons
+- GET  /quizzes
+- GET  /quizzes/:id
+- POST /quizzes/:id/submit
+
+Coding / CodeLab:
+- GET  /coding
+- GET  /coding/:id
+- POST /coding/:id/submit
+- POST /coding/:id/hint
+
+Boss battles:
+- GET  /boss/tests/:moduleSlug
+- POST /boss/tests/:moduleSlug/complete
+- GET  /boss/completions/me
+
+Submissions:
+- GET /submissions/me
+
+Leaderboard:
+- GET /leaderboard
+- GET /leaderboard/period
+
+Badges:
+- GET /badges
+- GET /badges/me
+- GET /badges/unlocks
+- POST /badges/unlocks/:unlockId/seen
+
+Cosmetics (WBC Coins shop):
+- GET  /cosmetics
+- GET  /cosmetics/me
+- POST /cosmetics/purchase/:code
+- POST /cosmetics/equip
+
+Missions:
+- GET  /missions
+- POST /missions/:id/progress
+- POST /missions/:id/claim
+
+Friends:
+- GET  /friends
+- POST /friends/:friendId
+
+Challenges:
+- GET  /challenges
+- POST /challenges
+- POST /challenges/:id/accept
+- POST /challenges/:id/submit
+- (Also reuses coding submit for the challenge exercise)
+
+Chat:
+- GET  /chat/conversations
+- GET  /chat/conversations/:conversationId
+- POST /chat/conversations/:conversationId/messages
+- POST /chat/conversations/direct/:userId
+- POST /chat/conversations/support
+
+Classes (professor + student):
+- POST /classes
+- GET  /classes/my-classes
+- GET  /classes/my-joined-classes
+- POST /classes/join
+- POST /classes/:id/regenerate-code
+- GET  /classes/:id
+
+Class announcements:
+- POST /classes/:classId/announcements
+- GET  /classes/:classId/announcements
+
+Class assignments:
+- POST /classes/:classId/assignments
+- GET  /classes/:classId/assignments
+- GET  /classes/:classId/assignments/:assignmentId
+- POST /classes/:classId/assignments/:assignmentId/submit
+
+Professor analytics / reports:
+- GET /professor/reports/export
+- GET /professor/analytics/classes/:classId/summary
+- GET /professor/analytics/classes/:classId/leaderboard
+- GET /professor/analytics/classes/:classId/timeseries
+- GET /professor/analytics/classes/:classId/students
+- GET /professor/analytics/classes/:classId/risks
+- GET /professor/analytics/classes/:classId/modules
+
+Admin:
+- GET  /admin/dashboard
+- GET  /admin/users
+- PATCH /admin/users/:id/role
+- POST /admin/badges/grant-all
+- POST /admin/dev-tools/boost
+- GET  /admin/messages
+- GET  /admin/messages/unread/count
+- POST /admin/messages
+- POST /admin/messages/:messageId/read
+- GET  /admin/approvals/pending
+- GET  /admin/approvals/my-submissions
+- POST /admin/approvals/submit
+- POST /admin/approvals/:id/review
+- GET  /admin/assignments/pending
+- POST /admin/assignments/:id/review
+
+Support:
+- GET  /support/tickets
+- POST /support/tickets
+- POST /support/tickets/:ticketId/replies
+- POST /support/tickets/:ticketId/assign
+- POST /support/tickets/:ticketId/resolve
+
+Analytics:
+- POST /analytics/event
+- GET  /analytics/metrics
+- POST /analytics/invites
+
+
+9) Data model (Prisma) — enums and models (names)
+-------------------------------------------------
+Enums:
+- RoleType
+- SubmissionType
+- ChallengeStatus
+- MissionStatus
+- Language
+- CosmeticType
+- ActivityEventType
+- ApprovalStatus
+- ContentType
+- MessageStatus
+- ConversationType
+- SupportTicketStatus
+- SupportTicketPriority
+- AssignmentType
+- AssignmentStatus
+
+Models (all present in `backend/prisma/schema.prisma`):
+- Role
+- User
+- BossCompletion
+- ActivityEvent
+- ReferralInvite
+- CosmeticItem
+- CosmeticOwnership
+- CosmeticEquip
+- Lesson
+- LessonRead
+- Quiz
+- QuizQuestion
+- CodingExercise
+- Submission
+- XPEvent
+- Badge
+- BadgeAssignment
+- BadgeUnlock
+- LeaderboardEntry
+- LeaderboardSeason
+- LeaderboardSeasonResult
+- LeaderboardSeasonSnapshot
+- Friendship
+- Challenge
+- WeeklyMission
+- MissionParticipant
+- ProfessorReport
+- ContentApproval
+- Message
+- Conversation
+- ConversationParticipant
+- ChatMessage
+- SupportTicket
+- SupportTicketReply
+- Class
+- ClassMember
+- ClassAnnouncement
+- ClassAssignment
+- ClassAssignmentSubmission
+
+Key fields (high-level summary):
+- User: xp, level, streak, wbcCoins, avatarUrl, title, bio, role, relations to content, missions, challenges, classes, chat, support.
+- CodingExercise: lessonId, title, prompt, starterCode, difficulty, language, category, testCases(Json), hint, status.
+- Submission: quizId/codingId, type (QUIZ/CODING/CHALLENGE), score, maxScore, feedback, stdout/stderr.
+- XPEvent: ledger of XP deltas for analytics/period XP.
+- Badge / BadgeAssignment / BadgeUnlock: large badge system; unlocks feed toasts.
+- LeaderboardEntry: periodStartDate for 30-day seasons; rank + xp.
+- WeeklyMission / MissionParticipant: mission tracking + claim.
+- Challenge: 1v1 states + winner.
+- Class / ClassMember / ClassAnnouncement / ClassAssignment / ClassAssignmentSubmission: classroom system.
+- ContentApproval: approval workflow for lessons/quizzes/coding exercises.
+- SupportTicket / SupportTicketReply: support system.
+- Conversation / ChatMessage: chat system.
+- ReferralInvite + ActivityEvent: analytics/referrals.
+
+
+10) Seed data (backend/prisma/seed.ts)
+-------------------------------------
+Seed initializes (high-level):
+- Roles for STUDENT/PROFESSOR/ADMIN.
+- Default users for each role (admin, professor, sample students).
+- Lessons and quizzes (sample content).
+- Coding exercises (CodeLab + roadmap seeded content).
+- A large badge catalog (multi-tier, multi-category).
+- Weekly missions fixtures.
+- Cosmetics catalog (shop items) + pricing.
+- Friends relationships among sample students.
+
+Education curriculum + seeded “edu” problems:
+- Education curriculum data is in `frontend/src/data/education-curriculum.ts`.
+- Seed adds a starter set of “Programare Procedurală (clasa a IX-a)” problems under categories:
+  - edu:pp-syntax-io
+  - edu:pp-if
+  - edu:pp-loops
+  - edu:pp-numbers
+  - edu:pp-lists
+- These are intended for professor assignment creation via the problem picker.
+
+
+11) UI/UX design system and patterns
+------------------------------------
+Design philosophy (see DESIGN_SYSTEM.md):
+- Dark-first, professional EdTech aesthetic.
+- Always-visible progress (XP/level/streak).
+- Celebration moments (XP toasts, confetti, badge unlocks).
+- Clear hierarchy + progressive disclosure (avoid cognitive overload).
+
+Reusable UI pieces:
+- Button variants (`frontend/src/components/ui/button.tsx`)
+- Badge variants (`frontend/src/components/ui/badge.tsx`)
+- Skeleton loaders, empty states, error states, modals
+- XPBar + WBCCoin display
+- BadgeUnlockToaster (global)
+
+Classes UI refactor:
+- StudentClassesPage + professor ClassesPage + ClassDetailPage redesigned to match Roadmap/Codelab “glass + gradient” style.
+- ClassDetailPage includes a local leaderboard and dashboard layout.
+- CreateAssignmentPage includes a curriculum-guided picker modal for existing problems.
+
+
+12) Known gotchas / development notes
+-------------------------------------
+- Role normalization:
+  - JWT payload role can come as string or object; controllers normalize role to uppercase.
+  - `/coding` behavior depends on correct role; if role is misread you’ll see only roadmap categories.
+
+- Code validation:
+  - Prefer explicit `testCases` in DB for robust grading.
+  - If no testCases/examples, “smart validation” tries to infer expected output for some common problems; otherwise it rejects.
+
+- Chat:
+  - Uses polling (2s) rather than websockets; keep an eye on load/rate limiting.
+
+- Prisma on Windows:
+  - Occasional EPERM rename issues if node processes keep prisma binaries open. Stop dev servers and rerun generate/migrate.
+
+- Cache invalidation:
+  - After mutations (cosmetics purchase/equip, claim rewards, admin grant-all, etc.) invalidate relevant React Query keys.
+
+
+End of file.
+

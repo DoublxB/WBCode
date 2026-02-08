@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useLogin } from '../../api/hooks';
 import { authStore } from '../../store/auth.store';
 import { Eye, EyeOff, ArrowRight, Code2 } from 'lucide-react';
+import Prism from '../../components/ui/Prism';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -46,9 +47,23 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 p-4">
+    <div className="relative flex min-h-screen items-center justify-center p-4 overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <Prism
+          animationType="rotate"
+          timeScale={0.5}
+          height={3.5}
+          baseWidth={5.5}
+          scale={3.6}
+          hueShift={0}
+          colorFrequency={1}
+          noise={0}
+          glow={1}
+        />
+      </div>
+      <div className="absolute inset-0 z-[1] bg-black/10" />
       <div
-        className="relative w-full max-w-md"
+        className="relative z-10 w-full max-w-md"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >

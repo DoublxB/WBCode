@@ -9,6 +9,9 @@ export interface DashboardStatsDto {
   problemsSolvedToday: number;
   problemsSolvedThisWeek: number;
   problemsSolvedTotal: number;
+  uniqueProblemsSolved?: number;
+  firstTryCount?: number;
+  lessonsReadCount?: number;
   quizzesCompletedToday: number;
   quizzesCompletedThisWeek: number;
   
@@ -21,6 +24,7 @@ export interface DashboardStatsDto {
   challengesWon: number;
   challengesLost: number;
   challengesTotal: number;
+  challengeWinRate?: number;
   
   // Streak & Activity
   currentStreak: number;

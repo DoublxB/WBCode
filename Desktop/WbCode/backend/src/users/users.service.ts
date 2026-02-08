@@ -11,7 +11,14 @@ export class UsersService {
       const user = await this.prisma.user.findUnique({
         where: { id: Number(userId) },
         include: { 
-          role: true
+          role: true,
+          badges: {
+            include: { badge: true },
+            orderBy: { awardedAt: 'desc' }
+          },
+          cosmeticEquips: {
+            include: { cosmetic: true }
+          }
         }
       });
       if (!user) {
@@ -26,9 +33,23 @@ export class UsersService {
         lastName: user.lastName,
         avatarUrl: user.avatarUrl,
         title: user.title,
+        bio: (user as any).bio ?? null,
         xp: user.xp,
         level: user.level,
         streak: user.streak,
+        wbcCoins: user.wbcCoins,
+        badges: user.badges?.map((ba: any) => ({
+          id: ba.badgeId,
+          code: ba.badge?.code,
+          name: ba.badge?.name,
+          description: ba.badge?.description,
+          threshold: ba.badge?.threshold,
+          awardedAt: ba.awardedAt ? ba.awardedAt.toISOString() : null
+        })) ?? [],
+        cosmeticsEquipped: (user as any).cosmeticEquips?.reduce((acc: any, e: any) => {
+          acc[e.type] = e.cosmetic?.code ?? null;
+          return acc;
+        }, {}) ?? {},
         lastLoginAt: user.lastLoginAt ? user.lastLoginAt.toISOString() : null,
         roleId: user.roleId,
         role: user.role.name,
@@ -47,7 +68,8 @@ export class UsersService {
       where: { id: userId },
       data: {
         avatarUrl: dto.avatarUrl,
-        title: dto.title
+        title: dto.title,
+        bio: dto.bio
       }
     });
     return updated;
@@ -189,6 +211,53 @@ export class UsersService {
     // Calculate longest streak (simplified - in real app, track this separately)
     const longestStreak = user.streak; // This would need proper tracking
 
+    // Calculate problems solved on first try
+    const allCodingSubmissions = await this.prisma.submission.findMany({
+      where: {
+        userId,
+        type: 'CODING',
+        score: { gt: 0 }
+      },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    const problemSubmissions = new Map<number, any[]>();
+    for (const sub of allCodingSubmissions) {
+      if (!sub.codingId) continue;
+      if (!problemSubmissions.has(sub.codingId)) {
+        problemSubmissions.set(sub.codingId, []);
+      }
+      problemSubmissions.get(sub.codingId)!.push(sub);
+    }
+
+    let firstTryCount = 0;
+    for (const [_, subs] of problemSubmissions.entries()) {
+      if (subs.length > 0 && subs[0].score > 0) {
+        firstTryCount++;
+      }
+    }
+
+    // Get lessons read count
+    const lessonsReadCount = await this.prisma.lessonRead.count({
+      where: { userId }
+    });
+
+    // Calculate win rate for challenges
+    const challengeWinRate = challenges.length > 0 
+      ? Math.round((challengesWon / challenges.length) * 100)
+      : 0;
+
+    // Get unique problems solved (distinct codingId)
+    const uniqueProblemsSolved = await this.prisma.submission.findMany({
+      where: {
+        userId,
+        type: 'CODING',
+        score: { gt: 0 }
+      },
+      distinct: ['codingId'],
+      select: { codingId: true }
+    });
+
     return {
       totalXP: user.xp,
       level: user.level,
@@ -197,6 +266,9 @@ export class UsersService {
       problemsSolvedToday,
       problemsSolvedThisWeek,
       problemsSolvedTotal: codingSubmissions.filter(s => s.score > 0).length,
+      uniqueProblemsSolved: uniqueProblemsSolved.length,
+      firstTryCount,
+      lessonsReadCount,
       quizzesCompletedToday,
       quizzesCompletedThisWeek,
       averageTypingSpeed,
@@ -205,6 +277,7 @@ export class UsersService {
       challengesWon,
       challengesLost: challenges.length - challengesWon,
       challengesTotal: challenges.length,
+      challengeWinRate,
       currentStreak: user.streak,
       longestStreak,
       activeDaysThisWeek,

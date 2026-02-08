@@ -17,7 +17,9 @@ const runProcess = (command: string, args: string[], cwd: string, stdin = '') =>
     let stderr = '';
 
     if (stdin) {
-      child.stdin.write(stdin);
+      // Asigură-te că stdin se termină cu newline pentru Python input()
+      const stdinWithNewline = stdin.endsWith('\n') ? stdin : stdin + '\n';
+      child.stdin.write(stdinWithNewline, 'utf8');
     }
     child.stdin.end();
 

@@ -13,8 +13,14 @@ export class CodingController {
   constructor(private readonly coding: CodingService) {}
 
   @Get()
-  list() {
-    return this.coding.listExercises();
+  list(@CurrentUser() user: any) {
+    const roleString = user?.role || user?.role?.name;
+    const normalizedRole = typeof roleString === 'string' ? roleString.toUpperCase() : roleString;
+    const userObj = {
+      id: Number(user?.sub || user?.id),
+      role: normalizedRole as Role
+    };
+    return this.coding.listExercises(userObj);
   }
 
   @Get(':id')
@@ -26,8 +32,10 @@ export class CodingController {
   @Post()
   create(@CurrentUser() user: any, @Body() dto: CreateCodingExerciseDto) {
     const userObj = {
-      id: user.sub || user.id,
-      role: user.role || user.role?.name
+      id: Number(user.sub || user.id),
+      role: (typeof (user.role || user.role?.name) === 'string'
+        ? (user.role || user.role?.name).toUpperCase()
+        : (user.role || user.role?.name)) as Role
     };
     return this.coding.createExercise(userObj, dto);
   }
@@ -39,6 +47,14 @@ export class CodingController {
     @Body() dto: SubmitCodeDto
   ) {
     return this.coding.submit(userId, id, dto);
+  }
+
+  @Post(':id/hint')
+  getHint(
+    @CurrentUser('sub') userId: number,
+    @Param('id', ParseIntPipe) id: number
+  ) {
+    return this.coding.getHint(userId, id);
   }
 }
 

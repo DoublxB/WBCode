@@ -12,6 +12,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { EmailService } from '../common/services/email.service';
+import { BadgesService } from '../gamification/badges.service';
 
 @Injectable()
 export class AuthService {
@@ -19,7 +20,8 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
-    private readonly emailService: EmailService
+    private readonly emailService: EmailService,
+    private readonly badges: BadgesService
   ) {}
 
   async register(dto: RegisterDto) {
@@ -45,6 +47,29 @@ export class AuthService {
       include: { role: true }
     });
 
+    // Referral: if a referral code was provided, mark invite as accepted (for viral coefficient).
+    if (dto.referralCode) {
+      try {
+        const invite = await this.prisma.referralInvite.findUnique({
+          where: { code: dto.referralCode }
+        });
+
+        if (invite && !invite.acceptedAt && !invite.acceptedUserId) {
+          await this.prisma.referralInvite.update({
+            where: { code: dto.referralCode },
+            data: { acceptedAt: new Date(), acceptedUserId: user.id }
+          });
+        }
+      } catch (e) {
+        // Never fail registration due to referral issues.
+        console.warn('[register] referralCode handling failed', e);
+      }
+    }
+
+    // SOCIAL starter badge (0 friends)
+    // If badge exists, it will emit unlock event for toast on first login/profile fetch.
+    await this.badges.awardByCode(user.id, 'social_localhost');
+
     return this.issueTokens(user);
   }
 
@@ -59,10 +84,22 @@ export class AuthService {
         throw new UnauthorizedException('Invalid credentials');
       }
 
+      // Maintain login streak: increment at most once per calendar day.
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const lastLogin = user.lastLoginAt ? new Date(user.lastLoginAt) : null;
+
+      const shouldIncrement = !lastLogin || lastLogin < todayStart;
+      const nextStreak = shouldIncrement ? (user.streak ?? 0) + 1 : (user.streak ?? 0);
+
       await this.prisma.user.update({
         where: { id: user.id },
-        data: { lastLoginAt: new Date() }
+        data: { lastLoginAt: now, streak: nextStreak }
       });
+
+      if (shouldIncrement) {
+        await this.badges.checkLoginStreak(user.id, nextStreak);
+      }
 
       return this.issueTokens(user);
     } catch (error) {

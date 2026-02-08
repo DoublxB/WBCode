@@ -1,7 +1,7 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
-import { useAdminDashboard } from '../../api/hooks';
+import { useAdminDashboard, useProfile } from '../../api/hooks';
 import { Role } from '../../store/auth.store';
 import StatCard from '../../components/StatCard';
 import SkeletonLoader from '../../components/SkeletonLoader';
@@ -34,11 +34,39 @@ import { useState } from 'react';
 
 const AdminDashboardPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [selectedUser, setSelectedUser] = useState<number | null>(null);
+  const [devSolvedCount, setDevSolvedCount] = useState<number>(60);
 
   const { data: stats, isLoading: statsLoading } = useAdminDashboard();
+  const { data: profile } = useProfile();
+
+  const grantAllBadges = useMutation({
+    mutationFn: async () => {
+      const { data } = await api.post('/admin/badges/grant-all');
+      return data;
+    }
+    ,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['badges'] });
+      queryClient.invalidateQueries({ queryKey: ['badges', 'me'] });
+    }
+  });
+
+  const devTools = useMutation({
+    mutationFn: async (payload: { wbcCoins?: number; solvedProblems?: number; xp?: number; level?: number }) => {
+      const { data } = await api.post('/admin/dev-tools/boost', payload);
+      return data as { ok: boolean; user?: any; solvedCreated?: number };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['coding'] });
+      queryClient.invalidateQueries({ queryKey: ['boss', 'me'] });
+    }
+  });
 
   const { data: users, isLoading: usersLoading, refetch: refetchUsers } = useQuery({
     queryKey: ['admin-users', roleFilter],
@@ -78,7 +106,7 @@ const AdminDashboardPage = () => {
     <div className="space-y-8">
       {/* Header */}
       <header className="relative overflow-hidden rounded-2xl border border-slate-800 bg-gradient-to-br from-red-500/10 via-purple-500/10 to-indigo-500/10 p-6 md:p-8">
-        <div className="relative z-10">
+        <div className="relative z-10 flex items-start justify-between gap-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-3 rounded-xl bg-gradient-to-br from-red-500 to-purple-600 shadow-lg">
               <Shield className="h-8 w-8 text-white" />
@@ -88,17 +116,109 @@ const AdminDashboardPage = () => {
               <h1 className="text-3xl md:text-4xl font-bold text-white">Dashboard Overview</h1>
             </div>
           </div>
-          <p className="text-slate-300 mt-2">
-            Monitor and manage the entire platform from one central location
-          </p>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => grantAllBadges.mutate()}
+              disabled={grantAllBadges.isPending}
+              className="btn-press rounded-xl bg-amber-500/15 border border-amber-500/30 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="For showcase: grant all badges to current admin user"
+            >
+              {grantAllBadges.isPending ? 'Granting...' : 'Grant all badges (showcase)'}
+            </button>
+            {profile && (
+              <span className="text-xs text-slate-400">
+                as <span className="text-white font-semibold">{profile.firstName}</span>
+              </span>
+            )}
+          </div>
         </div>
+        <p className="text-slate-300 mt-2">
+          Monitor and manage the entire platform from one central location
+        </p>
       </header>
+
+      {/* Dev Tools (admin testing) */}
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-sm p-6">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Dev Tools (Testing)</h2>
+            <p className="text-sm text-slate-400">
+              Setează rapid coins și numărul de probleme rezolvate ca să testezi toate feature-urile.
+            </p>
+          </div>
+          <button
+            onClick={() => devTools.mutate({ wbcCoins: 99999 })}
+            disabled={devTools.isPending}
+            className="btn-press rounded-xl bg-amber-500/15 border border-amber-500/30 px-4 py-2 text-sm font-semibold text-amber-300 hover:bg-amber-500/20 transition-colors disabled:opacity-50"
+          >
+            {devTools.isPending ? 'Applying...' : 'Set coins = 99999'}
+          </button>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="rounded-xl border border-white/5 bg-slate-950/30 p-4">
+            <div className="text-xs font-semibold tracking-wider text-slate-400 uppercase">Problems solved</div>
+            <div className="mt-2 flex items-center gap-3">
+              <input
+                type="number"
+                min={0}
+                max={5000}
+                value={devSolvedCount}
+                onChange={(e) => setDevSolvedCount(Number(e.target.value))}
+                className="w-full rounded-lg border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-white"
+              />
+              <button
+                onClick={() => devTools.mutate({ solvedProblems: devSolvedCount })}
+                disabled={devTools.isPending}
+                className="btn-press whitespace-nowrap rounded-lg bg-emerald-500/15 border border-emerald-500/25 px-4 py-2 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/20 disabled:opacity-50"
+              >
+                Apply
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-slate-500">
+              Marchează N exerciții CodeLab ca rezolvate (idempotent).
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-white/5 bg-slate-950/30 p-4">
+            <div className="text-xs font-semibold tracking-wider text-slate-400 uppercase">XP / Level</div>
+            <div className="mt-2 flex gap-3">
+              <button
+                onClick={() => devTools.mutate({ xp: 999999, level: 50 })}
+                disabled={devTools.isPending}
+                className="btn-press w-full rounded-lg bg-blue-500/15 border border-blue-500/25 px-4 py-2 text-sm font-semibold text-blue-300 hover:bg-blue-500/20 disabled:opacity-50"
+              >
+                Set XP=999999, Level=50
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-slate-500">
+              Opțional, pentru a testa UI-ul de level/XP rapid.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-white/5 bg-slate-950/30 p-4">
+            <div className="text-xs font-semibold tracking-wider text-slate-400 uppercase">One-click</div>
+            <div className="mt-2 flex gap-3">
+              <button
+                onClick={() => devTools.mutate({ wbcCoins: 99999, solvedProblems: 60, xp: 999999, level: 50 })}
+                disabled={devTools.isPending}
+                className="btn-press w-full rounded-lg bg-gradient-to-r from-cyan-500/20 to-emerald-500/20 border border-white/10 px-4 py-2 text-sm font-semibold text-white hover:from-cyan-500/25 hover:to-emerald-500/25 disabled:opacity-50"
+              >
+                {devTools.isPending ? 'Applying...' : 'Max test preset'}
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-slate-500">
+              Coins + solved + XP/level pentru test complet.
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           icon={Users}
-          label="Total Users"
+          title="Total Users"
           value={stats?.totalUsers ?? 0}
           subtitle={`${stats?.students ?? 0} students, ${stats?.professors ?? 0} professors`}
           color="primary"
@@ -107,24 +227,24 @@ const AdminDashboardPage = () => {
         />
         <StatCard
           icon={Activity}
-          label="Active Today"
+          title="Active Today"
           value={stats?.activeUsersToday ?? 0}
           subtitle={`${stats?.activeUsersThisWeek ?? 0} this week`}
           color="success"
         />
         <StatCard
           icon={CheckCircle}
-          label="Pending Approvals"
+          title="Pending Approvals"
           value={(stats?.pendingApprovals ?? 0) + (stats?.pendingAssignmentApprovals ?? 0)}
           subtitle="Content & Assignments"
           color="warning"
         />
         <StatCard
           icon={LifeBuoy}
-          label="Open Tickets"
+          title="Open Tickets"
           value={stats?.openTickets ?? 0}
           subtitle={`${stats?.urgentTickets ?? 0} urgent`}
-          color="error"
+          color="warning"
         />
       </div>
 
@@ -247,31 +367,31 @@ const AdminDashboardPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard
           icon={GraduationCap}
-          label="Classes"
+          title="Classes"
           value={`${stats?.activeClasses ?? 0} / ${stats?.totalClasses ?? 0}`}
           subtitle="Active classes"
           color="info"
         />
         <StatCard
           icon={Sword}
-          label="Challenges"
+          title="Challenges"
           value={`${stats?.activeChallenges ?? 0} / ${stats?.totalChallenges ?? 0}`}
           subtitle="Active challenges"
           color="warning"
         />
         <StatCard
           icon={Target}
-          label="Missions"
+          title="Missions"
           value={`${stats?.activeMissions ?? 0} / ${stats?.totalMissions ?? 0}`}
           subtitle="Active missions"
           color="success"
         />
         <StatCard
           icon={LifeBuoy}
-          label="Support"
+          title="Support"
           value={`${stats?.openTickets ?? 0} open`}
           subtitle={`${stats?.inProgressTickets ?? 0} in progress`}
-          color="error"
+          color="warning"
         />
       </div>
 

@@ -18,7 +18,12 @@ export class ClassesService {
     return randomBytes(3).toString('hex').toUpperCase().substring(0, 6);
   }
 
-  async createClass(professor: { id: number; role: Role }, name: string, description?: string) {
+  async createClass(
+    professor: { id: number; role: Role },
+    name: string,
+    description?: string,
+    usesRoadmap: boolean = false
+  ) {
     this.ensureProfessor(professor);
 
     // Generate unique invitation code
@@ -35,7 +40,8 @@ export class ClassesService {
           name,
           description: description || null,
           professorId: professor.id,
-          invitationCode
+          invitationCode,
+          usesRoadmap
         },
         include: {
           professor: {
@@ -154,12 +160,23 @@ export class ClassesService {
   }
 
   async joinClass(student: { id: number; role: Role }, invitationCode: string) {
-    if (student.role !== Role.STUDENT) {
+    const roleString = typeof student.role === 'string' ? student.role.toUpperCase() : student.role;
+    if (roleString !== Role.STUDENT && roleString !== 'STUDENT') {
       throw new ForbiddenException('Only students can join classes');
     }
 
+    const studentId = Number(student.id);
+    if (!student.id || Number.isNaN(studentId)) {
+      throw new BadRequestException('Invalid student ID');
+    }
+
+    const code = String(invitationCode || '').trim().toUpperCase();
+    if (!code) {
+      throw new BadRequestException('Invitation code is required');
+    }
+
     const classEntity = await this.prisma.class.findUnique({
-      where: { invitationCode }
+      where: { invitationCode: code }
     });
 
     if (!classEntity) {
@@ -175,7 +192,7 @@ export class ClassesService {
       where: {
         classId_studentId: {
           classId: classEntity.id,
-          studentId: student.id
+          studentId
         }
       }
     });
@@ -187,7 +204,7 @@ export class ClassesService {
     return this.prisma.classMember.create({
       data: {
         classId: classEntity.id,
-        studentId: student.id
+        studentId
       },
       include: {
         class: {

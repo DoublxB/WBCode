@@ -32,6 +32,13 @@ export class CreateCodingExerciseDto {
   @IsOptional()
   @IsString()
   outputSpec?: string;
+
+  @IsOptional()
+  @IsString()
+  hint?: string; // Hint personalizat pentru problemă (în română)
+
+  @IsOptional()
+  testCases?: any; // Array of test cases: [{input?: string, stdin?: string, output: string}]
 }
 
 export class SubmitCodeDto {

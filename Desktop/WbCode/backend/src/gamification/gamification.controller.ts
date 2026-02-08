@@ -9,7 +9,15 @@ export class GamificationController {
   getLeaderboard(@Query('limit') limit?: string) {
     return this.gamification.getLeaderboard(limit ? Number(limit) : 50);
   }
+
+  @Get('period')
+  getPeriodInfo() {
+    return this.gamification.getPeriodInfo();
+  }
 }
+
+
+
 
 
 

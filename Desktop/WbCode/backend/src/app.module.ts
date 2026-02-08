@@ -14,6 +14,7 @@ import { ProfessorModule } from './professor/professor.module';
 import { AdminModule } from './admin/admin.module';
 import { SandboxModule } from './sandbox/sandbox.module';
 import { ChatModule } from './chat/chat.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -40,7 +41,8 @@ import { AppController } from './app.controller';
     SubmissionsModule,
     ProfessorModule,
     AdminModule,
-    ChatModule
+    ChatModule,
+    AnalyticsModule
   ],
   controllers: [AppController],
   providers: [

@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   Code2,
   FileQuestion,
+  Map,
   Target,
   Trophy,
   Sword,
@@ -15,6 +16,7 @@ import {
   FileEdit,
   FileText,
   Shield,
+  BarChart3,
   MessageSquare,
   CheckCircle,
   LifeBuoy,
@@ -24,7 +26,8 @@ import {
   Settings,
   LogOut,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Gift
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -38,8 +41,10 @@ interface NavItem {
 
 const studentNav: NavItem[] = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, section: 'main' },
+  { to: '/roadmap', label: 'Roadmap', icon: Map, section: 'learn' },
   { to: '/code-lab', label: 'Code Lab', icon: Code2, section: 'learn' },
-  { to: '/quizzes', label: 'Quizzes', icon: FileQuestion, section: 'learn' },
+  { to: '/quizzes', label: 'Quiz-uri', icon: FileQuestion, section: 'learn' },
+  { to: '/cosmetics', label: 'Shop', icon: Gift, section: 'main' },
   { to: '/missions', label: 'Weekly Missions', icon: Target, section: 'learn' },
   { to: '/leaderboard', label: 'Leaderboard', icon: Trophy, section: 'compete' },
   { to: '/challenges', label: 'Challenges', icon: Sword, section: 'compete' },
@@ -58,6 +63,7 @@ const professorNav: NavItem[] = [
 
 const adminNav: NavItem[] = [
   { to: '/admin', label: 'User Management', icon: Shield, section: 'admin' },
+  { to: '/admin/analytics', label: 'Analytics', icon: BarChart3, section: 'admin' },
   { to: '/admin/approvals', label: 'Content Approvals', icon: CheckCircle, section: 'admin' },
   { to: '/admin/assignment-approvals', label: 'Assignment Approvals', icon: BookOpen, section: 'admin' },
   { to: '/admin/support', label: 'Support Tickets', icon: LifeBuoy, section: 'admin' }
@@ -69,7 +75,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const logout = () => {
     authStore.getState().logout();
@@ -330,4 +336,8 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
+
+
+
 

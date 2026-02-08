@@ -4,10 +4,15 @@ import { CreateQuizDto } from './dto/create-quiz.dto';
 import { SubmitQuizDto } from './dto/submit-quiz.dto';
 import { Role } from '../common/constants/roles';
 import { GamificationService } from '../gamification/gamification.service';
+import { WBCCoinsService } from '../gamification/wbc-coins.service';
 
 @Injectable()
 export class QuizzesService {
-  constructor(private readonly prisma: PrismaService, private readonly gamification: GamificationService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly gamification: GamificationService,
+    private readonly wbcCoins: WBCCoinsService
+  ) {}
 
   async createQuiz(user: { id: number; role: Role }, dto: CreateQuizDto) {
     if (user.role !== Role.PROFESSOR && user.role !== Role.ADMIN) {
@@ -120,6 +125,59 @@ export class QuizzesService {
 
     if (xpGain > 0) {
       await this.gamification.awardXP(userId, xpGain, `Quiz ${quiz.title} completion`);
+      
+      // Award WBC Coins for quiz completion
+      const coinsReward = this.wbcCoins.calculateQuizReward(score, maxScore, quiz.questions.length);
+      if (coinsReward > 0) {
+        await this.wbcCoins.awardCoins(userId, coinsReward, `Quiz completed: ${quiz.title}`, 'QUIZ');
+      }
+    }
+
+    // Update weekly missions automatically based on this quiz success
+    if (score > 0) {
+      const now = new Date();
+      const missions = await this.prisma.weeklyMission.findMany({
+        where: {
+          status: 'ACTIVE',
+          startDate: { lte: now },
+          endDate: { gte: now }
+        }
+      });
+
+      // QUIZZES missions: +1 per completed quiz
+      const quizMissions = missions.filter((m) => m.goalType === 'QUIZZES');
+      for (const mission of quizMissions) {
+        await this.gamification.applyMissionProgress(userId, mission as any, 1);
+      }
+
+      // XP missions: progress grows with XP gained from this quiz
+      if (xpGain > 0) {
+        const xpMissions = missions.filter((m) => m.goalType === 'XP');
+        for (const mission of xpMissions) {
+          await this.gamification.applyMissionProgress(userId, mission as any, xpGain);
+        }
+      }
+
+      // ACTIVE_DAYS missions: mark the day as active (max 1 per day)
+      const activeDayMissions = missions.filter((m) => m.goalType === 'ACTIVE_DAYS');
+      if (activeDayMissions.length > 0) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        for (const mission of activeDayMissions) {
+          const participant = await this.prisma.missionParticipant.findUnique({
+            where: { missionId_userId: { missionId: mission.id, userId } }
+          });
+
+          const lastUpdate = participant ? (participant as any).updatedAt ?? null : null;
+          const alreadyCountedToday =
+            lastUpdate && new Date(lastUpdate).getTime() >= today.getTime();
+
+          if (!alreadyCountedToday) {
+            await this.gamification.applyMissionProgress(userId, mission as any, 1);
+          }
+        }
+      }
     }
 
     return { score, maxScore, xpGain, feedback: feedbackParts };

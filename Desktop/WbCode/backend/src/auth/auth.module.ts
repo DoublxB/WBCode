@@ -7,11 +7,13 @@ import { AuthController } from './auth.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { EmailService } from '../common/services/email.service';
+import { GamificationModule } from '../gamification/gamification.module';
 
 @Module({
   imports: [
     ConfigModule,
     PrismaModule,
+    GamificationModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({

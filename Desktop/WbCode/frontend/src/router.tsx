@@ -6,18 +6,28 @@ import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import StudentDashboard from './pages/student/StudentDashboard';
 import CodeLabPage from './pages/student/CodeLabPage';
+import RoadmapPage from './pages/student/RoadmapPage';
+import BossBattlePage from './pages/student/BossBattlePage';
+import ModuleMaterialsPage from './pages/student/ModuleMaterialsPage';
 import QuizHubPage from './pages/student/QuizHubPage';
+import QuizTrackDetailPage from './pages/student/QuizTrackDetailPage';
+import QuizExplorePage from './pages/student/QuizExplorePage';
+import QuizPlayPage from './pages/student/QuizPlayPage';
+import CosmeticShopPage from './pages/student/CosmeticShopPage';
 import ProfilePage from './pages/student/ProfilePage';
 import LeaderboardPage from './pages/student/LeaderboardPage';
 import MissionsPage from './pages/student/MissionsPage';
 import ChallengesPage from './pages/student/ChallengesPage';
 import ChallengeSolvePage from './pages/student/ChallengeSolvePage';
+import MissionSolvePage from './pages/student/MissionSolvePage';
+import MissionCodeSolvePage from './pages/student/MissionCodeSolvePage';
 import FriendsPage from './pages/student/FriendsPage';
 import ProfessorDashboardPage from './pages/professor/ProfessorDashboardPage';
 import ContentBuilderPage from './pages/professor/ContentBuilderPage';
 import ReportsPage from './pages/professor/ReportsPage';
 import AdminPanelPage from './pages/admin/AdminPanelPage';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminAnalyticsPage from './pages/admin/AdminAnalyticsPage';
 import AdminMessagingPage from './pages/admin/AdminMessagingPage';
 import AdminApprovalsPage from './pages/admin/AdminApprovalsPage';
 import AdminSupportPage from './pages/admin/AdminSupportPage';
@@ -110,11 +120,28 @@ export const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       { index: true, loader: indexLoader, element: <StudentDashboard /> },
+      { path: 'roadmap', element: <RoadmapPage /> },
+      { path: 'roadmap/materiale/:moduleSlug', element: <ModuleMaterialsPage /> },
+      { path: 'roadmap/boss/:moduleSlug', element: <BossBattlePage /> },
       { path: 'code-lab', element: <CodeLabPage /> },
-      { path: 'quizzes', element: <QuizHubPage /> },
+      // Alias requested by spec (buttons go to /codelab?category=slug)
+      { path: 'codelab', element: <CodeLabPage /> },
+      {
+        path: 'quizzes',
+        children: [
+          { index: true, element: <QuizHubPage /> },
+          { path: 'explore', element: <QuizExplorePage /> },
+          { path: 'play/:quizId', element: <QuizPlayPage /> },
+          { path: ':categorySlug', element: <QuizTrackDetailPage /> }
+        ]
+      },
+      { path: 'cosmetics', element: <CosmeticShopPage /> },
       { path: 'profile', element: <ProfilePage /> },
       { path: 'leaderboard', element: <LeaderboardPage /> },
       { path: 'missions', element: <MissionsPage /> },
+      { path: 'missions/:id/solve', element: <MissionSolvePage /> },
+      { path: 'missions/:id/code', element: <MissionCodeSolvePage /> },
+      { path: 'missions/:id/solve', element: <MissionSolvePage /> },
       { path: 'challenges', element: <ChallengesPage /> },
       { path: 'challenges/:id/solve', element: <ChallengeSolvePage /> },
       { path: 'friends', element: <FriendsPage /> },
@@ -129,6 +156,7 @@ export const router = createBrowserRouter([
       { path: 'classes/:id', element: <ClassDetailPage /> },
       { path: 'classes/:classId/assignments/:assignmentId', element: <AssignmentDetailPage /> },
       { path: 'admin', element: <AdminDashboardPage /> },
+      { path: 'admin/analytics', element: <AdminAnalyticsPage /> },
       { path: 'admin/users', element: <AdminPanelPage /> },
       { path: 'admin/messages', element: <AdminMessagingPage /> },
       { path: 'admin/approvals', element: <AdminApprovalsPage /> },

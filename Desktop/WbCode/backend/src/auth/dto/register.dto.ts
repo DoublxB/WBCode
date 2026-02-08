@@ -18,7 +18,15 @@ export class RegisterDto {
   @IsOptional()
   @IsEnum(Role)
   role?: Role;
+
+  @IsOptional()
+  @IsString()
+  referralCode?: string;
 }
+
+
+
+
 
 
 

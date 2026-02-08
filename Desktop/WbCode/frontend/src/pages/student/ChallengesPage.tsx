@@ -122,10 +122,10 @@ const ChallengesPage = () => {
 
   // Send challenge mutation
   const sendChallenge = useMutation({
-    mutationFn: async (payload: { targetUserId: number; category: string; mode: 'RANDOM' }) => {
+    mutationFn: async (payload: { targetUserId: number; category?: string; mode: 'RANDOM' | 'AUTO' }) => {
       const { data } = await api.post('/challenges', {
         opponentId: payload.targetUserId,
-        category: payload.category,
+        ...(payload.category && { category: payload.category }),
         mode: payload.mode
       });
       return data;
@@ -181,17 +181,30 @@ const ChallengesPage = () => {
     }
   });
 
-  const handleSendChallenge = () => {
-    if (!selectedFriend || !selectedCategory) {
-      setShowToast({ message: 'Please select a friend and category', type: 'error' });
+  const handleSendChallenge = (useAuto: boolean = false) => {
+    if (!selectedFriend) {
+      setShowToast({ message: 'Please select a friend', type: 'error' });
       return;
     }
 
-    sendChallenge.mutate({
-      targetUserId: selectedFriend.id,
-      category: selectedCategory,
-      mode: 'RANDOM'
-    });
+    if (useAuto) {
+      // AUTO mode - system picks any random problem
+      sendChallenge.mutate({
+        targetUserId: selectedFriend.id,
+        mode: 'AUTO'
+      });
+    } else {
+      // RANDOM mode - requires category
+      if (!selectedCategory) {
+        setShowToast({ message: 'Please select a category', type: 'error' });
+        return;
+      }
+      sendChallenge.mutate({
+        targetUserId: selectedFriend.id,
+        category: selectedCategory,
+        mode: 'RANDOM'
+      });
+    }
   };
 
   const getFriendAvatar = (friend: Friend) => {
@@ -418,24 +431,43 @@ const ChallengesPage = () => {
             })}
           </div>
 
-          {/* Send Challenge Button */}
-          <button
-            onClick={handleSendChallenge}
-            disabled={!selectedFriend || !selectedCategory || sendChallenge.isPending}
-            className="w-full mt-6 flex items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-primary to-purple-600 px-6 py-4 text-lg font-bold text-white hover:from-primary/90 hover:to-purple-600/90 transition-all shadow-lg hover:shadow-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
-          >
-            {sendChallenge.isPending ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
-                Sending...
-              </>
-            ) : (
-              <>
-                <Sword className="h-6 w-6" />
-                Send Challenge
-              </>
-            )}
-          </button>
+          {/* Send Challenge Buttons */}
+          <div className="mt-6 space-y-3">
+            <button
+              onClick={() => handleSendChallenge(false)}
+              disabled={!selectedFriend || !selectedCategory || sendChallenge.isPending}
+              className="w-full flex items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-primary to-purple-600 px-6 py-4 text-lg font-bold text-white hover:from-primary/90 hover:to-purple-600/90 transition-all shadow-lg hover:shadow-primary/50 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+            >
+              {sendChallenge.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Sword className="h-6 w-6" />
+                  Send Challenge (Category)
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => handleSendChallenge(true)}
+              disabled={!selectedFriend || sendChallenge.isPending}
+              className="w-full flex items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 text-lg font-bold text-white hover:from-emerald-600 hover:to-teal-700 transition-all shadow-lg hover:shadow-emerald-500/50 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
+            >
+              {sendChallenge.isPending ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-6 w-6" />
+                  Let System Choose Problem (AUTO)
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 

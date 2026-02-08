@@ -25,54 +25,63 @@ const StreakCalendar = ({ streak = 0 }: StreakCalendarProps) => {
     return 0.4; // Default
   };
   
-  const getColorClass = (intensity: number): string => {
-    if (intensity > 0.7) return 'bg-success-500';
-    if (intensity > 0.4) return 'bg-success-600';
-    if (intensity > 0) return 'bg-success-700';
-    return 'bg-slate-800';
+  const getColorClass = (intensity: number, isToday: boolean): string => {
+    // PORTOCALIU pentru ziua curentă (recompensă), VERDE pentru activitate
+    if (isToday) return 'bg-gradient-to-br from-amber-500 to-orange-500 shadow-lg shadow-amber-500/50 animate-pulse';
+    if (intensity > 0.7) return 'bg-gradient-to-br from-green-500 to-emerald-500 hover:shadow-lg hover:shadow-green-500/50';
+    if (intensity > 0.4) return 'bg-gradient-to-br from-green-600 to-emerald-600';
+    if (intensity > 0) return 'bg-gradient-to-br from-green-700 to-emerald-700';
+    return 'bg-slate-800 border border-slate-700';
   };
   
   return (
-    <div className="rounded-2xl border border-slate-700/50 bg-slate-800/60 backdrop-blur-sm p-6 shadow-lg">
-      <div className="flex items-center justify-between mb-4">
+    <div className="group relative rounded-2xl border-2 border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-orange-500/10 to-amber-500/10 backdrop-blur-sm p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:border-amber-400/50">
+      {/* Animated background glow - PORTOCALIU pentru recompensă */}
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      
+      <div className="relative flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Flame className="h-5 w-5 text-orange-500" />
-          <h3 className="text-lg font-semibold text-white">Streak</h3>
+          <div className="p-2 rounded-lg bg-gradient-to-br from-amber-500/30 to-orange-500/30 group-hover:scale-110 transition-transform duration-300">
+            <Flame className="h-6 w-6 text-amber-400 drop-shadow-lg animate-pulse" />
+          </div>
+          <h3 className="text-lg font-bold text-white">Streak</h3>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-bold text-orange-500">{streak}</span>
-          <span className="text-sm text-slate-400">days</span>
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-amber-500/20 to-orange-500/20 border-2 border-amber-400/40">
+          <span className="text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-400 drop-shadow-lg animate-float">
+            {streak}
+          </span>
+          <span className="text-sm text-slate-300 font-semibold">days</span>
         </div>
       </div>
       
-      <div className="grid grid-cols-7 gap-1 mb-4">
+      <div className="grid grid-cols-7 gap-1.5 mb-4">
         {days.map((date, i) => {
           const intensity = getIntensity(date);
           const isToday = date.toDateString() === new Date().toDateString();
-          const colorClass = getColorClass(intensity);
+          const colorClass = getColorClass(intensity, isToday);
           
           return (
             <div
               key={i}
-              className={`aspect-square rounded ${
+              className={`aspect-square rounded-lg transition-all duration-300 cursor-pointer hover:scale-125 hover:z-10 ${
                 colorClass
               } ${
-                isToday ? 'ring-2 ring-orange-500 ring-offset-2 ring-offset-slate-900' : ''
-              } transition-all hover:scale-110 cursor-pointer`}
+                isToday ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900 animate-pulse' : ''
+              }`}
               title={`${date.toLocaleDateString()} - ${intensity > 0 ? 'Active' : 'No activity'}`}
             />
           );
         })}
       </div>
       
-      <div className="flex items-center justify-between text-xs text-slate-400">
-        <span>Less</span>
-        <div className="flex gap-1">
-          <div className="w-3 h-3 rounded bg-success-700" />
-          <div className="w-3 h-3 rounded bg-success-600" />
-          <div className="w-3 h-3 rounded bg-success-500" />
+      <div className="flex items-center justify-between text-xs text-slate-300">
+        <span className="font-semibold">Less</span>
+        <div className="flex gap-1.5">
+          <div className="w-3 h-3 rounded-full bg-gradient-to-br from-green-700 to-emerald-700" />
+          <div className="w-3 h-3 rounded-full bg-gradient-to-br from-green-600 to-emerald-600" />
+          <div className="w-3 h-3 rounded-full bg-gradient-to-br from-green-500 to-emerald-500 shadow-lg shadow-green-500/50" />
         </div>
-        <span>More</span>
+        <span className="font-semibold">More</span>
       </div>
     </div>
   );

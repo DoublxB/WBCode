@@ -18,8 +18,8 @@ class CreateChallengeDto {
   category?: string; // Category for random selection
 
   @IsOptional()
-  @IsIn(['RANDOM', 'SPECIFIC'])
-  mode?: 'RANDOM' | 'SPECIFIC'; // Challenge mode
+  @IsIn(['RANDOM', 'SPECIFIC', 'AUTO'])
+  mode?: 'RANDOM' | 'SPECIFIC' | 'AUTO'; // Challenge mode (AUTO = system picks any random problem)
 }
 
 @UseGuards(JwtAuthGuard)

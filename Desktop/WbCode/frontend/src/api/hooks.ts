@@ -64,12 +64,125 @@ export const useQuizzes = () =>
     }
   });
 
+export const useCosmetics = () =>
+  useQuery({
+    queryKey: ['cosmetics'],
+    queryFn: async () => {
+      const { data } = await api.get('/cosmetics');
+      return data as any[];
+    }
+  });
+
+export const useMyCosmetics = () =>
+  useQuery({
+    queryKey: ['cosmetics', 'me'],
+    queryFn: async () => {
+      const { data } = await api.get('/cosmetics/me');
+      return data as any;
+    }
+  });
+
 export const useLeaderboard = () =>
   useQuery({
     queryKey: ['leaderboard'],
     queryFn: async () => {
       const { data } = await api.get('/leaderboard');
       return data as any[];
+    }
+  });
+
+export const useLeaderboardPeriod = () =>
+  useQuery({
+    queryKey: ['leaderboard', 'period'],
+    queryFn: async () => {
+      const { data } = await api.get('/leaderboard/period');
+      return data;
+    }
+  });
+
+// -------------------------------
+// Professor Analytics (scoped to professor's classes)
+// -------------------------------
+
+export const useProfessorClassSummary = (classId: number | null, fromISO: string, toISO: string) =>
+  useQuery({
+    queryKey: ['professor-analytics', 'class', classId, 'summary', fromISO, toISO],
+    enabled: Boolean(classId),
+    queryFn: async () => {
+      const { data } = await api.get(`/professor/analytics/classes/${classId}/summary`, {
+        params: { from: fromISO, to: toISO }
+      });
+      return data as any;
+    }
+  });
+
+export const useProfessorClassLeaderboard = (
+  classId: number | null,
+  metric: 'xpGain' | 'xpTotal' | 'solved',
+  fromISO: string,
+  toISO: string
+) =>
+  useQuery({
+    queryKey: ['professor-analytics', 'class', classId, 'leaderboard', metric, fromISO, toISO],
+    enabled: Boolean(classId),
+    queryFn: async () => {
+      const { data } = await api.get(`/professor/analytics/classes/${classId}/leaderboard`, {
+        params: { metric, from: fromISO, to: toISO, limit: 25 }
+      });
+      return data as any;
+    }
+  });
+
+export const useProfessorClassTimeseries = (
+  classId: number | null,
+  metric: 'submissions' | 'activeStudents' | 'xpGain',
+  fromISO: string,
+  toISO: string
+) =>
+  useQuery({
+    queryKey: ['professor-analytics', 'class', classId, 'timeseries', metric, fromISO, toISO],
+    enabled: Boolean(classId),
+    queryFn: async () => {
+      const { data } = await api.get(`/professor/analytics/classes/${classId}/timeseries`, {
+        params: { metric, from: fromISO, to: toISO }
+      });
+      return data as any;
+    }
+  });
+
+export const useProfessorClassStudents = (classId: number | null, fromISO: string, toISO: string) =>
+  useQuery({
+    queryKey: ['professor-analytics', 'class', classId, 'students', fromISO, toISO],
+    enabled: Boolean(classId),
+    queryFn: async () => {
+      const { data } = await api.get(`/professor/analytics/classes/${classId}/students`, {
+        params: { from: fromISO, to: toISO }
+      });
+      return data as any;
+    }
+  });
+
+export const useProfessorClassRisks = (classId: number | null, fromISO: string, toISO: string) =>
+  useQuery({
+    queryKey: ['professor-analytics', 'class', classId, 'risks', fromISO, toISO],
+    enabled: Boolean(classId),
+    queryFn: async () => {
+      const { data } = await api.get(`/professor/analytics/classes/${classId}/risks`, {
+        params: { from: fromISO, to: toISO }
+      });
+      return data as any;
+    }
+  });
+
+export const useProfessorClassModules = (classId: number | null, fromISO: string, toISO: string) =>
+  useQuery({
+    queryKey: ['professor-analytics', 'class', classId, 'modules', fromISO, toISO],
+    enabled: Boolean(classId),
+    queryFn: async () => {
+      const { data } = await api.get(`/professor/analytics/classes/${classId}/modules`, {
+        params: { from: fromISO, to: toISO }
+      });
+      return data as any;
     }
   });
 
@@ -273,7 +386,7 @@ export const useResolveTicket = () =>
 // Classes Hooks
 export const useCreateClass = () =>
   useMutation({
-    mutationFn: async (payload: { name: string; description?: string }) => {
+    mutationFn: async (payload: { name: string; description?: string; usesRoadmap?: boolean }) => {
       const { data } = await api.post('/classes', payload);
       return data;
     }

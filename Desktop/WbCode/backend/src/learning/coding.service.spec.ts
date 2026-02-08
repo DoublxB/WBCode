@@ -78,12 +78,16 @@ describe('CodingService', () => {
       const exercises = [mockExercise];
       (prisma.codingExercise.findMany as any).mockResolvedValue(exercises as any);
 
-      const result = await service.listExercises();
+      const result = await service.listExercises({ id: 1, role: Role.STUDENT } as any);
 
       expect(prisma.codingExercise.findMany).toHaveBeenCalledWith({
-        orderBy: { id: 'desc' }
+        where: {
+          OR: [{ category: null }, { category: { not: { startsWith: 'boss:' } } }]
+        },
+        orderBy: { id: 'asc' },
+        include: { submissions: false }
       });
-      expect(result).toEqual(exercises);
+      expect(result).toEqual(exercises.map((e: any) => ({ ...e, isSolved: false })));
     });
   });
 

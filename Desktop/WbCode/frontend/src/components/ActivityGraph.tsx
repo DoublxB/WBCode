@@ -108,3 +108,10 @@ const ActivityGraph = ({ weeks = 52 }: ActivityGraphProps) => {
 
 export default ActivityGraph;
 
+
+
+
+
+
+
+

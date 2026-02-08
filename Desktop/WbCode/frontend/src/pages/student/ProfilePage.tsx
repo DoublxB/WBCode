@@ -1,7 +1,7 @@
 import { FormEvent, useState, useEffect } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { useProfile, useDashboardStats, useLeaderboard, useFriends } from '../../api/hooks';
+import { useProfile, useDashboardStats, useLeaderboard, useFriends, useCosmetics } from '../../api/hooks';
 import { api } from '../../api/client';
 import { authStore } from '../../store/auth.store';
 import BadgeGrid from '../../components/BadgeGrid';
@@ -64,7 +64,9 @@ const ProfilePage = () => {
   const { data: stats } = useDashboardStats();
   const { data: leaderboard } = useLeaderboard();
   const { data: friends = [] } = useFriends();
+  const { data: cosmeticsCatalog = [] } = useCosmetics();
   const [isEditing, setIsEditing] = useState(false);
+  const [bioDraft, setBioDraft] = useState<string>('');
   const [form, setForm] = useState({ 
     avatarUrl: profile?.avatarUrl ?? avatars[0], 
     title: profile?.title ?? titles[0] 
@@ -74,6 +76,14 @@ const ProfilePage = () => {
     queryKey: ['badges'],
     queryFn: async () => {
       const { data } = await api.get('/badges');
+      return data as any[];
+    }
+  });
+
+  const { data: myBadges = [] } = useQuery({
+    queryKey: ['badges', 'me'],
+    queryFn: async () => {
+      const { data } = await api.get('/badges/me');
       return data as any[];
     }
   });
@@ -100,12 +110,13 @@ const ProfilePage = () => {
         avatarUrl: profile.avatarUrl ?? avatars[0], 
         title: profile.title ?? titles[0] 
       });
+      setBioDraft((profile as any).bio ?? '');
     }
   }, [profile]);
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const { data } = await api.patch('/users/profile', form);
+      const { data } = await api.patch('/users/profile', { ...form, bio: bioDraft });
       return data;
     },
     onSuccess: () => {
@@ -130,6 +141,24 @@ const ProfilePage = () => {
     }
   });
 
+  const equippedMap: Record<string, string | null> = ((profile as any)?.cosmeticsEquipped || {}) as any;
+
+  const getCosmeticByCode = (code?: string | null) =>
+    cosmeticsCatalog.find((c: any) => c.code === code) ||
+    null;
+
+  const banner = getCosmeticByCode(equippedMap.PROFILE_BANNER) || getCosmeticByCode('banner-default-night');
+  const frame = getCosmeticByCode(equippedMap.AVATAR_FRAME) || getCosmeticByCode('frame-default-ice');
+  const theme = getCosmeticByCode(equippedMap.PROFILE_THEME) || getCosmeticByCode('theme-default-blue');
+
+  const bannerColors: string[] = banner?.metadata?.colors || ['#0b1020', '#0f172a', '#111827'];
+  const frameBorder: string[] = frame?.metadata?.border || ['#60a5fa', '#a78bfa'];
+  const accent: string = theme?.metadata?.accent || '#60a5fa';
+
+  const profileHeroStyle: any = {
+    backgroundImage: `linear-gradient(135deg, ${bannerColors.join(', ')})`
+  };
+
   const submit = (event: FormEvent) => {
     event.preventDefault();
     if (!form.avatarUrl || !form.title) {
@@ -149,8 +178,11 @@ const ProfilePage = () => {
     setIsEditing(false);
   };
 
-  const unlockedBadgeIds = profile?.badges?.map((b: any) => b.id) || [];
-  const userRank = leaderboard?.findIndex((entry: any) => entry.user.id === profile?.id) + 1 || 0;
+  const unlockedBadgeIds =
+    (myBadges?.map((ba: any) => ba.badgeId ?? ba.badge?.id).filter(Boolean) as number[]) ||
+    profile?.badges?.map((b: any) => b.id) ||
+    [];
+  const userRank = ((leaderboard?.findIndex((entry: any) => entry.user.id === profile?.id) ?? -1) + 1) || 0;
   const xpForNextLevel = (profile?.level || 1) * 100;
   const xpProgress = profile?.xp ? ((profile.xp % 100) / 100) * 100 : 0;
 
@@ -184,7 +216,10 @@ const ProfilePage = () => {
   return (
     <div className="space-y-8">
       {/* Hero Section */}
-      <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-primary-500/20 via-purple-500/20 to-pink-500/20 p-8 md:p-12 shadow-2xl">
+      <div
+        className="relative overflow-hidden rounded-3xl border border-slate-800 p-8 md:p-12 shadow-2xl"
+        style={profileHeroStyle}
+      >
         <div className="absolute inset-0 opacity-30" style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
         }}></div>
@@ -194,12 +229,17 @@ const ProfilePage = () => {
             {/* Avatar */}
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-br from-primary-500 to-purple-600 rounded-full blur-2xl opacity-50 animate-pulse-slow"></div>
-              <div className="relative w-32 h-32 rounded-full border-4 border-white/20 bg-gradient-to-br from-primary-500 to-purple-600 flex items-center justify-center text-white text-4xl font-bold shadow-2xl">
-                {profile.avatarUrl ? (
-                  <img src={profile.avatarUrl} alt={profile.firstName} className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  <span>{profile.firstName?.[0]}{profile.lastName?.[0]}</span>
-                )}
+              <div
+                className="relative rounded-full p-1 shadow-2xl"
+                style={{ backgroundImage: `linear-gradient(135deg, ${frameBorder.join(', ')})` }}
+              >
+                <div className="w-32 h-32 rounded-full border-4 border-white/20 bg-slate-950/40 flex items-center justify-center text-white text-4xl font-bold overflow-hidden">
+                  {profile.avatarUrl ? (
+                    <img src={profile.avatarUrl} alt={profile.firstName} className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    <span>{profile.firstName?.[0]}{profile.lastName?.[0]}</span>
+                  )}
+                </div>
               </div>
               <div className="absolute -bottom-2 -right-2 w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 border-4 border-slate-900 flex items-center justify-center shadow-lg">
                 <Crown className="w-6 h-6 text-white" />
@@ -243,7 +283,7 @@ const ProfilePage = () => {
             {/* Actions */}
             <div className="flex gap-3">
               <button
-                className="px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all flex items-center gap-2"
+                className="btn-press px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-white/20 transition-all flex items-center gap-2"
                 title="Share Profile"
                 onClick={() => {
                   navigator.clipboard.writeText(window.location.href);
@@ -362,6 +402,22 @@ const ProfilePage = () => {
             </div>
             <form onSubmit={submit} className="space-y-6">
               <div>
+                <p className="text-sm text-slate-400 mb-3">Bio</p>
+                <textarea
+                  value={bioDraft}
+                  onChange={(e) => setBioDraft(e.target.value)}
+                  disabled={!isEditing}
+                  placeholder="Scrie ceva scurt despre tine (max 280 caractere)..."
+                  className={`w-full min-h-[88px] rounded-xl border border-slate-700/50 bg-slate-950/40 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/30 ${
+                    !isEditing ? 'opacity-60 cursor-not-allowed' : ''
+                  }`}
+                />
+                <div className="mt-2 text-xs text-slate-400 flex justify-between">
+                  <span>Arată mai “real” și crește calitatea profilului.</span>
+                  <span>{bioDraft.length}/280</span>
+                </div>
+              </div>
+              <div>
                 <p className="text-sm text-slate-400 mb-3">Choose avatar</p>
                 <div className="flex gap-4">
                   {avatars.map((avatar) => (
@@ -405,7 +461,7 @@ const ProfilePage = () => {
                 <button
                   type="submit"
                   disabled={mutation.isPending}
-                  className="w-full rounded-lg bg-gradient-to-r from-primary-500 to-secondary-500 px-6 py-3 font-semibold text-white hover:from-primary-600 hover:to-secondary-600 disabled:opacity-50 transition-all shadow-lg flex items-center justify-center gap-2"
+                  className="btn-press w-full rounded-lg bg-gradient-to-r from-primary-500 to-secondary-500 px-6 py-3 font-semibold text-white hover:from-primary-600 hover:to-secondary-600 disabled:opacity-50 transition-all shadow-lg flex items-center justify-center gap-2"
                 >
                   <Save className="w-4 h-4" />
                   {mutation.isPending ? 'Saving...' : 'Save Changes'}
@@ -595,7 +651,7 @@ const ProfilePage = () => {
           <div className="flex items-center gap-2">
             <div className="px-3 py-1.5 rounded-lg bg-success-500/20 border border-success-500/30">
               <span className="text-sm font-semibold text-success-400">
-                {Math.round((unlockedBadgeIds.length / badges.length) * 100)}% Complete
+                {badges.length > 0 ? Math.round((unlockedBadgeIds.length / badges.length) * 100) : 0}% Complete
               </span>
             </div>
           </div>

@@ -11,7 +11,16 @@ export class UpdateProfileDto {
   @MinLength(3)
   @MaxLength(64)
   title?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(280)
+  bio?: string;
 }
+
+
+
+
 
 
 

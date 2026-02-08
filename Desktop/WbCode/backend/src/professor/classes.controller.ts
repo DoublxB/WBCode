@@ -15,14 +15,14 @@ export class ClassesController {
   @Post()
   createClass(
     @CurrentUser() user: any,
-    @Body() dto: { name: string; description?: string }
+    @Body() dto: { name: string; description?: string; usesRoadmap?: boolean }
   ) {
     // Transform JWT payload to expected format
     const professor = {
-      id: user.sub || user.id,
+      id: Number(user.sub || user.id),
       role: user.role || user.role?.name
     };
-    return this.classes.createClass(professor, dto.name, dto.description);
+    return this.classes.createClass(professor, dto.name, dto.description, Boolean(dto?.usesRoadmap));
   }
 
   @Roles(Role.PROFESSOR, Role.ADMIN)
@@ -68,14 +68,27 @@ export class ClassesController {
   @Roles(Role.STUDENT)
   @Post('join')
   joinClass(@CurrentUser() user: any, @Body() dto: { invitationCode: string }) {
-    // Transform JWT payload to expected format
-    const roleString = user.role || user.role?.name;
+    const userIdRaw = user?.sub ?? user?.id;
+    const userId = Number(userIdRaw);
+    if (!userIdRaw || Number.isNaN(userId)) {
+      console.error('❌ joinClass - User ID not found/invalid:', { userRaw: user, userIdRaw });
+      throw new BadRequestException('User ID not found in token');
+    }
+
+    const roleString = user?.role || user?.role?.name;
     const normalizedRole = typeof roleString === 'string' ? roleString.toUpperCase() : roleString;
-    const student = {
-      id: user.sub || user.id,
-      role: normalizedRole as Role
-    };
-    return this.classes.joinClass(student, dto.invitationCode);
+    if (normalizedRole !== Role.STUDENT && normalizedRole !== 'STUDENT') {
+      console.error('❌ joinClass - Invalid role:', { roleString, normalizedRole, userRaw: user });
+      throw new BadRequestException(`Invalid role: ${normalizedRole}. Expected STUDENT.`);
+    }
+
+    const invitationCode = String(dto?.invitationCode || '').trim().toUpperCase();
+    if (!invitationCode) {
+      throw new BadRequestException('Invitation code is required');
+    }
+
+    const student = { id: userId, role: Role.STUDENT };
+    return this.classes.joinClass(student, invitationCode);
   }
 
   @Get(':id')

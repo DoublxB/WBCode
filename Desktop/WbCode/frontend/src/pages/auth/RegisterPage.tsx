@@ -1,18 +1,34 @@
-import { FormEvent, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { FormEvent, useEffect, useState } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useRegister } from '../../api/hooks';
 import { authStore } from '../../store/auth.store';
 import { Eye, EyeOff } from 'lucide-react';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const registerMutation = useRegister();
-  const [form, setForm] = useState({ email: '', password: '', firstName: '', lastName: '' });
+  const [form, setForm] = useState({ email: '', password: '', firstName: '', lastName: '', referralCode: '' });
   const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    const ref = searchParams.get('ref');
+    if (ref && ref.trim()) {
+      setForm((prev) => ({ ...prev, referralCode: ref.trim() }));
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const profile = await registerMutation.mutateAsync(form);
+    const payload: any = {
+      email: form.email,
+      password: form.password,
+      firstName: form.firstName,
+      lastName: form.lastName
+    };
+    if (form.referralCode?.trim()) payload.referralCode = form.referralCode.trim();
+
+    const profile = await registerMutation.mutateAsync(payload);
     // Backend now returns role as string, just normalize to uppercase
     const role = typeof profile?.role === 'string' ? profile.role.toUpperCase() : profile?.role;
     
@@ -42,6 +58,14 @@ const RegisterPage = () => {
       >
         <h1 className="text-3xl font-semibold text-white">Join WBCode</h1>
         <p className="text-sm text-slate-400">Track progress, earn badges, compete with friends.</p>
+        {form.referralCode?.trim() && (
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3">
+            <p className="text-xs font-semibold text-emerald-200">Invitație detectată</p>
+            <p className="text-xs text-emerald-100/80">
+              Cod referral: <span className="font-mono">{form.referralCode.trim()}</span>
+            </p>
+          </div>
+        )}
         <div className="grid gap-3 md:grid-cols-2">
           <label className="text-sm text-slate-300">
             First name

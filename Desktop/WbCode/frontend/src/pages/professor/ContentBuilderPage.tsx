@@ -2,6 +2,10 @@ import { FormEvent, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../../api/client';
 import { useSubmitForApproval } from '../../api/hooks';
+import { PageHeader } from '../../components/ui/page-header';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardHeader } from '../../components/ui/card';
+import { PenLine } from 'lucide-react';
 
 const ContentBuilderPage = () => {
   const queryClient = useQueryClient();
@@ -39,52 +43,60 @@ const ContentBuilderPage = () => {
 
   return (
     <div className="space-y-6">
-      <header>
-        <p className="text-sm text-slate-400">Create lessons & challenges</p>
-        <h1 className="text-3xl font-semibold text-white">Professor Content Builder</h1>
-      </header>
-      <form className="rounded-2xl border border-slate-800 bg-slate-900/70 p-6 space-y-4">
-        <h2 className="text-xl font-semibold text-white">New Lesson</h2>
+      <PageHeader
+        eyebrow="Create lessons & challenges"
+        title="Content Builder"
+        subtitle="Creează lecții în Markdown și trimite-le la approval. Totul e păstrat în stilul WBCode (glass + focus)."
+        icon={PenLine}
+      />
+
+      <Card className="bg-slate-900/40 border-white/5">
+        <CardHeader>
+          <h2 className="text-xl font-semibold text-white">New Lesson</h2>
+        </CardHeader>
+        <CardContent>
+          <form className="space-y-4">
         <input
           type="text"
           value={lessonForm.title}
           onChange={(e) => setLessonForm({ ...lessonForm, title: e.target.value })}
           placeholder="Lesson title"
-          className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"
+          className="w-full rounded-lg border border-white/5 bg-slate-950/50 px-3 py-2 text-sm text-white"
           required
         />
         <textarea
           value={lessonForm.description}
           onChange={(e) => setLessonForm({ ...lessonForm, description: e.target.value })}
           placeholder="Short description"
-          className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"
+          className="w-full rounded-lg border border-white/5 bg-slate-950/50 px-3 py-2 text-sm text-white"
           required
         />
         <textarea
           value={lessonForm.content}
           onChange={(e) => setLessonForm({ ...lessonForm, content: e.target.value })}
           placeholder="Markdown content"
-          className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-white"
+          className="w-full rounded-lg border border-white/5 bg-slate-950/50 px-3 py-2 text-sm text-white font-mono"
           rows={6}
           required
         />
         <div className="flex gap-3">
-          <button
+          <Button
             onClick={(e) => handleSubmit(e, false)}
-            className="rounded-lg border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-slate-800 disabled:opacity-50"
+            variant="secondary"
             disabled={createLesson.isPending || submitForApproval.isPending}
           >
             Save draft
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={(e) => handleSubmit(e, true)}
-            className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white hover:bg-primary/90 disabled:opacity-50"
             disabled={createLesson.isPending || submitForApproval.isPending}
           >
             Submit for approval
-          </button>
+          </Button>
         </div>
-      </form>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };

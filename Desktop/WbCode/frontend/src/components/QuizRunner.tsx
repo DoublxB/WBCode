@@ -159,7 +159,7 @@ const QuizRunner = ({ quizId, quizTitle, questions, timeLimit, onSubmit }: QuizR
     const isPerfect = result.score === result.maxScore;
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-indigo-950 text-slate-100 p-6">
+      <div className="min-h-full bg-zinc-950 text-white p-6">
         {showXPGain && (
           <XPGainToast
             amount={xpGained}
@@ -177,32 +177,32 @@ const QuizRunner = ({ quizId, quizTitle, questions, timeLimit, onSubmit }: QuizR
           {/* Result Header */}
           <div
             className={classNames(
-              'rounded-2xl border p-8 text-center shadow-xl',
+              'rounded-xl border p-8 text-center',
               isPerfect
-                ? 'border-success-500/40 bg-success-500/10'
+                ? 'border-green-500/40 bg-green-500/10'
                 : percentage >= 70
-                ? 'border-warning-500/40 bg-warning-500/10'
-                : 'border-error-500/40 bg-error-500/10'
+                ? 'border-amber-500/40 bg-amber-500/10'
+                : 'border-red-500/40 bg-red-500/10'
             )}
           >
             <div className="mb-4 flex justify-center">
               {isPerfect ? (
-                <Trophy className="h-20 w-20 text-success-400" />
+                <Trophy className="h-20 w-20 text-green-400" />
               ) : percentage >= 70 ? (
-                <CheckCircle className="h-20 w-20 text-warning-400" />
+                <CheckCircle className="h-20 w-20 text-amber-400" />
               ) : (
-                <XCircle className="h-20 w-20 text-error-400" />
+                <XCircle className="h-20 w-20 text-red-400" />
               )}
             </div>
             <h2 className="mb-2 text-4xl font-extrabold text-white">
               {isPerfect ? 'Perfect Score!' : percentage >= 70 ? 'Well Done!' : 'Keep Practicing!'}
             </h2>
-            <p className="mb-6 text-xl text-slate-300">
+            <p className="mb-6 text-xl text-zinc-300">
               You scored <span className="font-bold text-white">{result.score}</span> out of{' '}
               <span className="font-bold text-white">{result.maxScore}</span>
             </p>
             <div className="flex items-center justify-center gap-4 text-lg">
-              <div className="flex items-center gap-2 text-success-400">
+              <div className="flex items-center gap-2 text-green-400">
                 <TrendingUp className="h-5 w-5" />
                 <span className="font-semibold">+{result.xpGain} XP</span>
               </div>
@@ -221,19 +221,19 @@ const QuizRunner = ({ quizId, quizTitle, questions, timeLimit, onSubmit }: QuizR
                   className={classNames(
                     'rounded-xl border p-6',
                     isCorrect
-                      ? 'border-emerald-500/40 bg-emerald-500/5'
+                      ? 'border-green-500/40 bg-green-500/5'
                       : 'border-red-500/40 bg-red-500/5'
                   )}
                 >
                   <div className="mb-4 flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       {isCorrect ? (
-                        <CheckCircle className="h-6 w-6 text-emerald-400 flex-shrink-0" />
+                        <CheckCircle className="h-6 w-6 text-green-400 flex-shrink-0" />
                       ) : (
                         <XCircle className="h-6 w-6 text-red-400 flex-shrink-0" />
                       )}
                       <div>
-                        <p className="text-sm font-medium text-slate-400">Question {index + 1}</p>
+                        <p className="text-sm font-medium text-zinc-400">Question {index + 1}</p>
                         <p className="text-lg font-semibold text-white">{question.prompt}</p>
                       </div>
                     </div>
@@ -249,9 +249,9 @@ const QuizRunner = ({ quizId, quizTitle, questions, timeLimit, onSubmit }: QuizR
                             'rounded-lg border p-3 text-sm',
                             isSelected
                               ? isCorrect
-                                ? 'border-emerald-500 bg-emerald-500/20 text-emerald-200'
+                                ? 'border-green-500 bg-green-500/20 text-green-200'
                                 : 'border-red-500 bg-red-500/20 text-red-200'
-                              : 'border-slate-700 bg-slate-800/50 text-slate-300'
+                              : 'border-white/5 bg-zinc-900/50 text-zinc-300'
                           )}
                         >
                           {option}
@@ -266,12 +266,12 @@ const QuizRunner = ({ quizId, quizTitle, questions, timeLimit, onSubmit }: QuizR
                   </div>
 
                   {!isCorrect && question.explanation && (
-                    <div className="rounded-lg border border-yellow-500/40 bg-yellow-500/10 p-4">
+                    <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
                       <div className="flex items-start gap-2">
-                        <AlertCircle className="h-5 w-5 text-yellow-400 flex-shrink-0 mt-0.5" />
+                        <AlertCircle className="h-5 w-5 text-amber-400 flex-shrink-0 mt-0.5" />
                         <div>
-                          <p className="font-semibold text-yellow-300 mb-1">Explanation</p>
-                          <p className="text-sm text-yellow-200/80">{question.explanation}</p>
+                          <p className="font-semibold text-amber-300 mb-1">Explanation</p>
+                          <p className="text-sm text-amber-200/80">{question.explanation}</p>
                         </div>
                       </div>
                     </div>
@@ -286,44 +286,48 @@ const QuizRunner = ({ quizId, quizTitle, questions, timeLimit, onSubmit }: QuizR
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-indigo-950 text-slate-100 p-6">
+    <div className="min-h-full bg-zinc-950 text-white p-6">
       <div className="mx-auto max-w-4xl space-y-6">
         {/* Header */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-6 shadow-xl">
+        <div className="rounded-xl border border-white/5 bg-zinc-900/30 p-6">
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-extrabold text-white">{quizTitle}</h1>
-              <p className="mt-1 text-sm text-slate-400">
+              <h1 className="text-2xl font-bold text-white">{quizTitle}</h1>
+              <p className="mt-1 text-sm text-zinc-400">
                 Question {currentQuestionIndex + 1} of {questions.length}
               </p>
             </div>
-            <div className="flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2">
-              <Clock className={classNames('h-5 w-5', timeRemaining < 60 ? 'text-red-400' : 'text-slate-400')} />
-              <span className={classNames('font-mono text-lg font-semibold', timeRemaining < 60 ? 'text-red-400' : 'text-white')}>
+            <div className={`flex items-center gap-2 rounded-md border px-4 py-2 ${
+              timeRemaining < 60 
+                ? 'border-red-500/30 bg-red-500/10' 
+                : 'border-white/5 bg-zinc-900/50'
+            }`}>
+              <Clock className={classNames('h-4 w-4', timeRemaining < 60 ? 'text-red-400' : 'text-zinc-400')} />
+              <span className={classNames('font-mono text-sm font-semibold', timeRemaining < 60 ? 'text-red-400' : 'text-white')}>
                 {formatTime(timeRemaining)}
               </span>
             </div>
           </div>
 
           {/* Progress Bar */}
-          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-800">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-900">
             <div
-              className="h-full bg-gradient-to-r from-primary to-purple-500 transition-all duration-300"
+              className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
               style={{ width: `${progress}%` }}
             ></div>
           </div>
 
-          <div className="mt-4 flex items-center justify-between text-xs text-slate-400">
+          <div className="mt-4 flex items-center justify-between text-xs text-zinc-400">
             <span>{answeredCount} of {questions.length} answered</span>
             <span>{Math.round(progress)}% complete</span>
           </div>
         </div>
 
         {/* Question Card */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-8 shadow-xl">
+        <div className="rounded-xl border border-white/5 bg-zinc-900/30 p-8">
           <div className="mb-6">
-            <p className="text-lg font-semibold text-slate-400 mb-2">Question {currentQuestionIndex + 1}</p>
-            <h2 className="text-2xl font-bold text-white">{currentQuestion.prompt}</h2>
+            <p className="text-sm font-semibold text-zinc-400 mb-2">Question {currentQuestionIndex + 1}</p>
+            <h2 className="text-xl font-bold text-white">{currentQuestion.prompt}</h2>
           </div>
 
           <div className="space-y-3">
@@ -335,8 +339,8 @@ const QuizRunner = ({ quizId, quizTitle, questions, timeLimit, onSubmit }: QuizR
                   className={classNames(
                     'block cursor-pointer rounded-lg border p-4 transition-all duration-200',
                     isSelected
-                      ? 'border-primary bg-primary/20 text-white shadow-lg shadow-primary/20'
-                      : 'border-slate-700 bg-slate-800/50 text-slate-300 hover:border-primary/50 hover:bg-slate-800'
+                      ? 'border-blue-500 bg-blue-500/20 text-white shadow-lg shadow-blue-500/20'
+                      : 'border-white/5 bg-zinc-900/50 text-zinc-300 hover:border-blue-500/50 hover:bg-zinc-900'
                   )}
                 >
                   <input
@@ -345,7 +349,7 @@ const QuizRunner = ({ quizId, quizTitle, questions, timeLimit, onSubmit }: QuizR
                     value={option}
                     checked={isSelected}
                     onChange={() => setAnswers({ ...answers, [currentQuestion.id]: option })}
-                    className="mr-3 h-4 w-4 accent-primary"
+                    className="mr-3 h-4 w-4 accent-blue-500"
                   />
                   <span className="text-base">{option}</span>
                 </label>
@@ -359,9 +363,9 @@ const QuizRunner = ({ quizId, quizTitle, questions, timeLimit, onSubmit }: QuizR
           <button
             onClick={() => setCurrentQuestionIndex(Math.max(0, currentQuestionIndex - 1))}
             disabled={currentQuestionIndex === 0}
-            className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-6 py-3 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:border-primary transition-colors"
+            className="flex items-center gap-2 rounded-lg border border-white/5 bg-zinc-900/50 px-6 py-3 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:border-blue-500/50 hover:bg-zinc-900 transition-colors"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4" />
             Previous
           </button>
 
@@ -371,12 +375,12 @@ const QuizRunner = ({ quizId, quizTitle, questions, timeLimit, onSubmit }: QuizR
                 key={index}
                 onClick={() => setCurrentQuestionIndex(index)}
                 className={classNames(
-                  'h-3 w-3 rounded-full transition-all',
+                  'h-2 w-2 rounded-full transition-all',
                   index === currentQuestionIndex
-                    ? 'bg-primary w-8'
+                    ? 'bg-blue-500 w-8'
                     : answers[questions[index].id]
-                    ? 'bg-emerald-500'
-                    : 'bg-slate-700 hover:bg-slate-600'
+                    ? 'bg-green-500'
+                    : 'bg-zinc-700 hover:bg-zinc-600'
                 )}
                 title={`Question ${index + 1}`}
               />
@@ -386,19 +390,19 @@ const QuizRunner = ({ quizId, quizTitle, questions, timeLimit, onSubmit }: QuizR
           {currentQuestionIndex < questions.length - 1 ? (
             <button
               onClick={() => setCurrentQuestionIndex(Math.min(questions.length - 1, currentQuestionIndex + 1))}
-              className="flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-white hover:bg-primary/90 transition-colors"
+              className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-3 text-white font-semibold hover:from-blue-600 hover:to-blue-700 transition-all shadow-lg shadow-blue-500/20"
             >
               Next
-              <ArrowRight className="h-5 w-5" />
+              <ArrowRight className="h-4 w-4" />
             </button>
           ) : (
             <button
               onClick={handleSubmit}
               disabled={isSubmitting || answeredCount < questions.length}
-              className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-3 font-semibold text-white hover:from-emerald-400 hover:to-teal-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg"
+              className="flex items-center gap-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-3 font-semibold text-white hover:from-green-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-green-500/20"
             >
               {isSubmitting ? 'Submitting...' : 'Submit Quiz'}
-              <Trophy className="h-5 w-5" />
+              <Trophy className="h-4 w-4" />
             </button>
           )}
         </div>

@@ -1,15 +1,35 @@
 import { useMutation } from '@tanstack/react-query';
-import { useMissions } from '../../api/hooks';
-import MissionCard from '../../components/MissionCard';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useMissions, useProfile } from '../../api/hooks';
+import MissionCard, { Mission } from '../../components/MissionCard';
 import { api } from '../../api/client';
 
 const MissionsPage = () => {
   const { data, refetch } = useMissions();
+  const { data: profile } = useProfile();
+  const navigate = useNavigate();
 
-  const join = useMutation({
-    mutationFn: (missionId: number) => api.post(`/missions/${missionId}/join`),
-    onSuccess: () => refetch()
+  useEffect(() => {
+    api.post('/analytics/event', { type: 'MISSIONS_VIEW' }).catch(() => null);
+  }, []);
+
+  const claim = useMutation({
+    mutationFn: (mission: Mission) => api.post(`/missions/${mission.id}/claim`),
+    onSuccess: () => {
+      refetch();
+      // Track mission claim as mission engagement
+      api.post('/analytics/event', { type: 'MISSION_CLAIM' }).catch(() => null);
+    }
   });
+
+  const openMission = (mission: Mission) => {
+    if (mission.codingExerciseId) {
+      navigate(`/missions/${mission.id}/code`);
+    } else {
+      navigate(`/missions/${mission.id}/solve`);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -21,8 +41,15 @@ const MissionsPage = () => {
         {data?.map((mission: any) => (
           <MissionCard
             key={mission.id}
-            mission={{ ...mission, participants: mission.participants?.length ?? 0 }}
-            onJoin={(id) => join.mutate(id)}
+            mission={{
+              ...mission,
+              participants: mission.participants?.length ?? 0,
+              myParticipant: profile
+                ? mission.participants?.find((p: any) => p.userId === profile.id) ?? null
+                : null
+            }}
+            onOpen={(m) => openMission(m)}
+            onClaim={(m) => claim.mutate(m)}
           />
         ))}
       </div>
@@ -31,6 +58,7 @@ const MissionsPage = () => {
 };
 
 export default MissionsPage;
+
 
 
 

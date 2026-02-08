@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Role } from '../common/constants/roles';
+import { SubmissionType } from '@prisma/client';
 
 @Injectable()
 export class AdminService {
@@ -227,6 +228,127 @@ export class AdminService {
         score: s.score,
         createdAt: s.createdAt.toISOString()
       }))
+    };
+  }
+
+  async grantAllBadges(requester: { role: Role }, userId: number) {
+    this.ensureAdmin(requester);
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const badges = await this.prisma.badge.findMany({ select: { id: true } });
+    if (badges.length === 0) {
+      return { success: true, assigned: 0 };
+    }
+
+    const res = await this.prisma.badgeAssignment.createMany({
+      data: badges.map((b) => ({ userId, badgeId: b.id })),
+      skipDuplicates: true
+    });
+
+    return { success: true, assigned: res.count, totalBadges: badges.length };
+  }
+
+  async applyDevTools(
+    requester: { role: Role },
+    userId: number,
+    dto: { wbcCoins?: number; xp?: number; level?: number; solvedProblems?: number }
+  ) {
+    this.ensureAdmin(requester);
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+
+    // 1) Set currency/xp/level if provided
+    if (dto.wbcCoins !== undefined || dto.xp !== undefined || dto.level !== undefined) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          ...(dto.wbcCoins !== undefined ? { wbcCoins: dto.wbcCoins } : {}),
+          ...(dto.xp !== undefined ? { xp: dto.xp } : {}),
+          ...(dto.level !== undefined ? { level: dto.level } : {})
+        }
+      });
+    }
+
+    // 2) Mark N CodeLab problems as solved (idempotent)
+    let solvedCreated = 0;
+    if (dto.solvedProblems !== undefined) {
+      const targetCount = Math.max(0, Math.floor(dto.solvedProblems));
+      if (targetCount > 0) {
+        // Already solved coding IDs (score > 0)
+        const existingSolved = await this.prisma.submission.findMany({
+          where: {
+            userId,
+            type: SubmissionType.CODING,
+            score: { gt: 0 },
+            codingId: { not: null }
+          },
+          select: { codingId: true },
+          distinct: ['codingId']
+        });
+
+        const solvedSet = new Set<number>(existingSolved.map((r) => r.codingId!).filter(Boolean));
+
+        // Only "real" CodeLab exercises: non-boss, and de-dupe by title/prompt
+        const exercisesRaw = await this.prisma.codingExercise.findMany({
+          where: {
+            OR: [{ category: null }, { category: { not: { startsWith: 'boss:' } } }]
+          },
+          orderBy: { id: 'asc' },
+          select: { id: true, title: true, prompt: true }
+        });
+
+        const normalizeKey = (s: string) =>
+          String(s || '')
+            .toLowerCase()
+            .trim()
+            .replace(/\s+/g, ' ')
+            .replace(/[^\p{L}\p{N}\s-]/gu, '');
+
+        const seen = new Set<string>();
+        const exercises = exercisesRaw.filter((e) => {
+          const key = `${normalizeKey(e.title)}::${normalizeKey(String(e.prompt || '')).slice(0, 180)}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+
+        const toSolve = exercises.filter((e) => !solvedSet.has(e.id)).slice(0, targetCount);
+
+        if (toSolve.length > 0) {
+          // Create one 100% submission per exercise so it becomes "isSolved"
+          for (const ex of toSolve) {
+            await this.prisma.submission.create({
+              data: {
+                userId,
+                codingId: ex.id,
+                type: SubmissionType.CODING,
+                sourceCode: '# admin devtools: auto-solved for testing',
+                score: 100,
+                maxScore: 100,
+                feedback: 'Admin devtools: marked as solved.',
+                explanation: 'Admin devtools: marked as solved for feature testing.'
+              }
+            });
+            solvedCreated += 1;
+          }
+        }
+      }
+    }
+
+    const updated = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, wbcCoins: true, xp: true, level: true }
+    });
+
+    return {
+      ok: true,
+      user: updated,
+      solvedCreated
     };
   }
 }

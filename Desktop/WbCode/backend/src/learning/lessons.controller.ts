@@ -52,6 +52,16 @@ export class LessonsController {
     };
     return this.lessons.deleteLesson(id, userObj);
   }
+
+  @Post(':id/read')
+  markAsRead(@Param('id', ParseIntPipe) id: number, @CurrentUser('sub') userId: number) {
+    return this.lessons.markLessonAsRead(userId, id);
+  }
+
+  @Get(':id/read')
+  checkRead(@Param('id', ParseIntPipe) id: number, @CurrentUser('sub') userId: number) {
+    return this.lessons.isLessonRead(userId, id);
+  }
 }
 
 

@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from '../constants/roles';
 import { ROLES_KEY } from '../decorators/roles.decorator';
@@ -18,9 +18,27 @@ export class RolesGuard implements CanActivate {
     }
 
     const { user } = context.switchToHttp().getRequest();
-    return requiredRoles.includes(user?.role?.name || user?.role);
+    const rawRole = user?.role?.name ?? user?.role;
+    const userRole = typeof rawRole === 'string' ? rawRole.toUpperCase() : rawRole;
+
+    // Normalize required roles too (defensive: enum values are already uppercase strings)
+    const required = requiredRoles.map((r) => (typeof r === 'string' ? r.toUpperCase() : r));
+
+    const allowed = required.includes(userRole as any);
+    if (!allowed) {
+      throw new ForbiddenException(
+        `Access denied. Required role: ${required.join(', ')}. Your role: ${userRole ?? 'UNKNOWN'}.`
+      );
+    }
+
+    return true;
   }
 }
+
+
+
+
+
 
 
 

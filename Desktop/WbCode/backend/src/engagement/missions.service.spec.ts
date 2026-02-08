@@ -70,7 +70,7 @@ describe('MissionsService', () => {
       const missions = [mockMission];
       (prisma.weeklyMission.findMany as any).mockResolvedValue(missions as any);
 
-      const result = await service.listActiveMissions();
+      const result = await service.listActiveMissionsForUser(1);
 
       expect(prisma.weeklyMission.findMany).toHaveBeenCalled();
       expect(result).toEqual(missions);

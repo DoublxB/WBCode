@@ -38,6 +38,24 @@ enum Language {
   PYTHON
 }
 
+enum CosmeticType {
+  AVATAR_FRAME
+  PROFILE_BANNER
+  PROFILE_THEME
+  TITLE
+}
+
+enum ActivityEventType {
+  APP_OPEN
+  MISSIONS_VIEW
+  MISSION_CLAIM
+  CODELAB_START
+  STREAK_LOST
+  BADGE_UNLOCK
+  HINT_PURCHASE
+  COIN_TRANSACTION
+}
+
 model Role {
   id    Int      @id @default(autoincrement())
   name  RoleType @unique
@@ -54,9 +72,11 @@ model User {
   lastName                 String
   avatarUrl                String?
   title                    String?
+  bio                      String?
   xp                       Int                         @default(0)
   level                    Int                         @default(1)
   streak                   Int                         @default(0)
+  wbcCoins                 Int                         @default(0)
   lastLoginAt              DateTime?
   roleId                   Int
   role                     Role                        @relation(fields: [roleId], references: [id])
@@ -64,6 +84,7 @@ model User {
   quizSubmissions          Submission[]                @relation("UserSubmissions")
   xpEvents                 XPEvent[]
   badges                   BadgeAssignment[]
+  badgeUnlocks             BadgeUnlock[]
   friendships              Friendship[]                @relation("FriendUser")
   friendOf                 Friendship[]                @relation("FriendTarget")
   challengesSent           Challenge[]                 @relation("ChallengerRelation")
@@ -72,6 +93,8 @@ model User {
   reports                  ProfessorReport[]
   missionsCreated          WeeklyMission[]
   leaderboardEntry         LeaderboardEntry?
+  leaderboardSeasonResults LeaderboardSeasonResult[]
+  leaderboardSeasonSnapshots LeaderboardSeasonSnapshot[]
   contentApprovalsSent     ContentApproval[]           @relation("ContentApprovalProfessor")
   contentApprovalsReviewed ContentApproval[]           @relation("ContentApprovalAdmin")
   messagesSent             Message[]                   @relation("MessageSender")
@@ -87,8 +110,101 @@ model User {
   assignmentsCreated       ClassAssignment[]           @relation("AssignmentProfessor")
   assignmentsReviewed      ClassAssignment[]           @relation("AssignmentAdmin")
   assignmentSubmissions    ClassAssignmentSubmission[] @relation("AssignmentSubmissionStudent")
+  lessonReads              LessonRead[]                @relation("UserLessonReads")
+  cosmeticOwnerships       CosmeticOwnership[]
+  cosmeticEquips           CosmeticEquip[]
+  activityEvents           ActivityEvent[]
+  referralInvitesSent      ReferralInvite[]            @relation("ReferralInviter")
+  referralInviteAcceptedAs ReferralInvite?             @relation("ReferralAcceptedUser")
+  bossCompletions          BossCompletion[]
   createdAt                DateTime                    @default(now())
   updatedAt                DateTime                    @updatedAt
+}
+
+model BossCompletion {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  moduleSlug String
+  passedAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, moduleSlug])
+  @@index([moduleSlug])
+  @@index([userId, passedAt])
+}
+
+model ActivityEvent {
+  id        Int               @id @default(autoincrement())
+  userId    Int
+  type      ActivityEventType
+  codingId  Int?
+  quizId    Int?
+  missionId Int?
+  metadata  Json?
+  createdAt DateTime          @default(now())
+
+  user      User              @relation(fields: [userId], references: [id])
+
+  @@index([type, createdAt])
+  @@index([userId, createdAt])
+  @@index([codingId, createdAt])
+}
+
+model ReferralInvite {
+  id             Int      @id @default(autoincrement())
+  code           String   @unique
+  inviterId      Int
+  inviteeEmail   String?
+  createdAt      DateTime @default(now())
+  acceptedAt     DateTime?
+  acceptedUserId Int?     @unique
+
+  inviter        User     @relation("ReferralInviter", fields: [inviterId], references: [id])
+  acceptedUser   User?    @relation("ReferralAcceptedUser", fields: [acceptedUserId], references: [id])
+
+  @@index([inviterId, createdAt])
+  @@index([acceptedAt])
+}
+
+model CosmeticItem {
+  id          Int          @id @default(autoincrement())
+  code        String       @unique
+  type        CosmeticType
+  name        String
+  description String
+  priceCoins  Int          @default(0)
+  rarity      String?
+  metadata    Json?
+  createdAt   DateTime     @default(now())
+
+  ownerships  CosmeticOwnership[]
+  equips      CosmeticEquip[]
+}
+
+model CosmeticOwnership {
+  id          Int          @id @default(autoincrement())
+  userId      Int
+  cosmeticId  Int
+  purchasedAt DateTime     @default(now())
+
+  user     User         @relation(fields: [userId], references: [id])
+  cosmetic CosmeticItem @relation(fields: [cosmeticId], references: [id])
+
+  @@unique([userId, cosmeticId])
+}
+
+model CosmeticEquip {
+  id         Int          @id @default(autoincrement())
+  userId     Int
+  type       CosmeticType
+  cosmeticId Int?
+  equippedAt DateTime     @default(now())
+
+  user     User          @relation(fields: [userId], references: [id])
+  cosmetic CosmeticItem? @relation(fields: [cosmeticId], references: [id])
+
+  @@unique([userId, type])
 }
 
 model Lesson {
@@ -103,8 +219,20 @@ model Lesson {
   author      User             @relation("LessonAuthor", fields: [authorId], references: [id])
   quizzes     Quiz[]
   codingTasks CodingExercise[]
+  reads       LessonRead[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
+}
+
+model LessonRead {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  lessonId  Int
+  readAt    DateTime @default(now())
+  user      User     @relation("UserLessonReads", fields: [userId], references: [id])
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+
+  @@unique([userId, lessonId])
 }
 
 model Quiz {
@@ -131,20 +259,23 @@ model QuizQuestion {
 }
 
 model CodingExercise {
-  id          Int          @id @default(autoincrement())
-  lessonId    Int
-  title       String
-  prompt      String
-  starterCode String
-  difficulty  String
-  language    Language
-  category    String?      // Category for challenges (Algorithms, Data Structures, Frontend, Database, Debugging)
-  inputSpec   String?
-  outputSpec  String?
-  status      String       @default("DRAFT")
-  lesson      Lesson       @relation(fields: [lessonId], references: [id])
-  submissions Submission[]
-  challenges  Challenge[]
+  id             Int             @id @default(autoincrement())
+  lessonId       Int
+  title          String
+  prompt         String
+  starterCode    String
+  difficulty     String
+  language       Language
+  category       String? // Category for challenges (Algorithms, Data Structures, Frontend, Database, Debugging)
+  inputSpec      String?
+  outputSpec     String?
+  testCases      Json? // Array of test cases: [{input: string, output: string, stdin?: string}]
+  hint           String? // Hint personalizat pentru problemă (în română)
+  status         String          @default("DRAFT")
+  lesson         Lesson          @relation(fields: [lessonId], references: [id])
+  submissions    Submission[]
+  challenges     Challenge[]
+  weeklyMissions WeeklyMission[] @relation("WeeklyMissionCodingExercise")
 }
 
 model Submission {
@@ -182,7 +313,14 @@ model Badge {
   name        String
   description String
   threshold   Int
+  category    String            @default("MISC") // CODELAB, CONSISTENCY, SOCIAL, CHALLENGES, SEASONAL
+  tier        Int               @default(1) // 1..20 within category
+  icon        String?           // emoji or icon key
+  rarity      String?           // COMMON, RARE, EPIC, LEGENDARY
+  animation   String?           // shine, confetti, sparkle, etc.
+  criteria    String?           // machine-readable criteria key
   assignments BadgeAssignment[]
+  unlocks     BadgeUnlock[]
 }
 
 model BadgeAssignment {
@@ -192,15 +330,73 @@ model BadgeAssignment {
   awardedAt DateTime @default(now())
   badge     Badge    @relation(fields: [badgeId], references: [id])
   user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([badgeId, userId])
+}
+
+model BadgeUnlock {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  badgeId   Int
+  createdAt DateTime @default(now())
+  seenAt    DateTime?
+
+  user  User  @relation(fields: [userId], references: [id])
+  badge Badge @relation(fields: [badgeId], references: [id])
+
+  @@unique([userId, badgeId])
 }
 
 model LeaderboardEntry {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @unique
+  xp              Int
+  rank            Int
+  periodStartDate DateTime  @default(now()) // Data de început a perioadei curente (30 de zile)
+  updatedAt       DateTime  @updatedAt
+  user            User     @relation(fields: [userId], references: [id])
+}
+
+model LeaderboardSeason {
   id        Int      @id @default(autoincrement())
-  userId    Int      @unique
-  xp        Int
+  startDate DateTime
+  endDate   DateTime
+  createdAt DateTime @default(now())
+  results   LeaderboardSeasonResult[]
+  snapshots LeaderboardSeasonSnapshot[]
+
+  @@unique([startDate, endDate])
+}
+
+model LeaderboardSeasonResult {
+  id        Int      @id @default(autoincrement())
+  seasonId  Int
+  userId    Int
   rank      Int
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id])
+  xp        Int
+  createdAt DateTime @default(now())
+
+  season LeaderboardSeason @relation(fields: [seasonId], references: [id])
+  user   User              @relation(fields: [userId], references: [id])
+
+  @@unique([seasonId, userId])
+  @@index([userId, rank])
+}
+
+// Optional: can be populated daily later to enable "Comeback Kid" etc.
+model LeaderboardSeasonSnapshot {
+  id        Int      @id @default(autoincrement())
+  seasonId  Int
+  userId    Int
+  rank      Int
+  xp        Int
+  takenAt   DateTime @default(now())
+
+  season LeaderboardSeason @relation(fields: [seasonId], references: [id])
+  user   User              @relation(fields: [userId], references: [id])
+
+  @@index([seasonId, takenAt])
+  @@index([userId, takenAt])
 }
 
 model Friendship {
@@ -224,6 +420,9 @@ model Challenge {
   challengerScore  Float           @default(0)
   opponentScore    Float           @default(0)
   bonusXP          Int             @default(0)
+  acceptedAt       DateTime?
+  completedAt      DateTime?
+  winnerId         Int?
   createdAt        DateTime        @default(now())
   challenger       User            @relation("ChallengerRelation", fields: [challengerId], references: [id])
   opponent         User            @relation("OpponentRelation", fields: [opponentId], references: [id])
@@ -231,18 +430,20 @@ model Challenge {
 }
 
 model WeeklyMission {
-  id           Int                  @id @default(autoincrement())
-  title        String
-  description  String
-  goalType     String
-  goalValue    Int
-  rewardXP     Int
-  status       MissionStatus        @default(ACTIVE)
-  startDate    DateTime
-  endDate      DateTime
-  creatorId    Int
-  creator      User                 @relation(fields: [creatorId], references: [id])
-  participants MissionParticipant[]
+  id               Int                  @id @default(autoincrement())
+  title            String
+  description      String
+  goalType         String
+  goalValue        Int
+  rewardXP         Int
+  status           MissionStatus        @default(ACTIVE)
+  startDate        DateTime
+  endDate          DateTime
+  creatorId        Int
+  creator          User                 @relation(fields: [creatorId], references: [id])
+  codingExerciseId Int?
+  codingExercise   CodingExercise?      @relation("WeeklyMissionCodingExercise", fields: [codingExerciseId], references: [id])
+  participants     MissionParticipant[]
 }
 
 model MissionParticipant {
@@ -251,6 +452,11 @@ model MissionParticipant {
   userId    Int
   progress  Int           @default(0)
   completed Boolean       @default(false)
+  completedAt DateTime?
+  rewardClaimed Boolean   @default(false)
+  rewardClaimedAt DateTime?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
   mission   WeeklyMission @relation(fields: [missionId], references: [id])
   user      User          @relation(fields: [userId], references: [id])
 
@@ -417,6 +623,7 @@ model Class {
   professorId    Int
   invitationCode String              @unique
   isActive       Boolean             @default(true)
+  usesRoadmap    Boolean             @default(false)
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
   professor      User                @relation("ClassProfessor", fields: [professorId], references: [id])
